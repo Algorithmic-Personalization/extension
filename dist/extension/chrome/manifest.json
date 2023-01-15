@@ -1,0 +1,22 @@
+{
+	"name": "ytdpnl",
+	"version": "1.0",
+	"manifest_version": 3,
+	"content_scripts": [
+		{
+			"matches": [
+				"https://*.youtube.com/*",
+				"https://*.youtu.be/*"
+			],
+			"js": [
+				"content-script.js"
+			]
+		}
+	],
+	"host_permissions": [
+		"*://*.youtube.com/*",
+		"*://*.youtu.be/*",
+		"*://ytdpnl-dev.fmdj.fr/*",
+		"*://ytdpnl.fmdj.fr/*"
+	]
+}
