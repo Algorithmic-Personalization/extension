@@ -1,3 +1,0 @@
-#!/bin/env bash
-git pull
-docker-compose up --detach --build app-server

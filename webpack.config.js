@@ -112,5 +112,5 @@ module.exports = {
 			},
 		}),
 	],
-	devtool: isProduction ? false : 'inline-source-map',
+	devtool: 'inline-source-map',
 };
