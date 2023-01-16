@@ -2,8 +2,8 @@ import React from 'react';
 
 import {createApi, type Api} from './api';
 
-import {has} from '../util';
-import config from '../../config.extension';
+import {has} from './common/util';
+import config from '../config.extension';
 
 const env = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 console.log('NODE_ENV:', process.env.NODE_ENV);

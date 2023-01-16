@@ -1,6 +1,6 @@
 import type Recommendation from './models/Recommendation';
 
-import {has} from '../util';
+import {has} from './common/util';
 
 const getDataContainingList = (results: unknown[], useCredentials: boolean): unknown[] => {
 	if (!useCredentials) {

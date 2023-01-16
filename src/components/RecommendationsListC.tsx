@@ -2,8 +2,8 @@ import React, {useEffect, useState} from 'react';
 import {styled} from '@mui/material/styles';
 import crypto from 'crypto';
 
-import Event, {EventType} from '../../common/models/event';
-import RecommendationsEvent from '../../server/models/recommendationsEvent';
+import Event, {EventType} from '../common/models/event';
+import RecommendationsEvent from '../common/models/recommendationsEvent';
 
 import type Recommendation from '../models/Recommendation';
 import type {ExperimentConfig} from '../createRecommendationsList';
@@ -16,7 +16,7 @@ import {
 
 import RecommendationC from './RecommendationC';
 
-import {memoizeTemporarily, setPersonalizedFlags, retryOnError} from '../../util';
+import {memoizeTemporarily, setPersonalizedFlags, retryOnError} from '../common/util';
 import {debug, log} from '../lib';
 
 const memo = memoizeTemporarily(10000);

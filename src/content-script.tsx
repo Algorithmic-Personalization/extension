@@ -9,7 +9,7 @@ import theme from './theme';
 
 import {defaultApi as api, apiProvider as ApiProvider} from './apiProvider';
 
-import Event, {EventType} from '../server/models/event';
+import Event, {EventType} from './common/models/event';
 
 let root: HTMLElement | undefined;
 let previousUrl: string | undefined;

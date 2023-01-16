@@ -1,5 +1,5 @@
 import type Recommendation from './models/Recommendation';
-import {removeDuplicates, shuffleArray} from '../util';
+import {removeDuplicates, shuffleArray} from './common/util';
 
 export type ExperimentConfig = {
 	arm: 'control' | 'treatment';

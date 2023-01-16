@@ -9,10 +9,10 @@ import {
 	FormHelperText,
 } from '@mui/material';
 
-import type {ParticipantConfig} from '../server/api/participantConfig';
-import Event from '../server/models/event';
+import {type ParticipantConfig} from './common/models/experimentConfig';
+import Event from './common/models/event';
 
-import MessageC from '../server-app/components/MessageC';
+import MessageC from './common/components/MessageC';
 
 import RecommendationsListC from './components/RecommendationsListC';
 import {log} from './lib';

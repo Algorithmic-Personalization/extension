@@ -46,7 +46,7 @@ module.exports = {
 		new CopyPlugin({
 			patterns: [
 				{
-					from: 'src/extension/manifest.base.json',
+					from: 'src/manifest.base.json',
 					to: 'manifest.firefox.json',
 					transform(content) {
 						const manifest = JSON.parse(content);
@@ -55,7 +55,7 @@ module.exports = {
 					},
 				},
 				{
-					from: 'src/extension/manifest.base.json',
+					from: 'src/manifest.base.json',
 					to: 'manifest.json',
 					transform(content) {
 						const manifest = JSON.parse(content);

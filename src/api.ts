@@ -1,14 +1,14 @@
-import {type Maybe, makeApiVerbCreator, memoizeTemporarily} from '../util';
-import type Session from '../server/models/session';
-import type Event from '../server/models/event';
-import {type ParticipantConfig} from '../server/api/participantConfig';
+import {type Maybe, makeApiVerbCreator, memoizeTemporarily} from './common/util';
+import type Session from './common/models/session';
+import type Event from './common/models/event';
+import {type ParticipantConfig} from './common/models/experimentConfig';
 
 import {
 	postCreateSession,
 	postCheckParticipantCode,
 	getParticipantConfig,
 	postEvent,
-} from '../server/routes';
+} from './common/routes';
 
 export type Api = {
 	createSession: () => Promise<Maybe<Session>>;
