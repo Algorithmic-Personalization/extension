@@ -20,7 +20,7 @@
 		"skipLibCheck": true
 	},
 	"include": ["."],
-	"exclude": ["node_modules", "build", "dist"],
+	"exclude": ["node_modules", "dist"],
 	"ts-node": {
 		"files": true,
 	}
