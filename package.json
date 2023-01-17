@@ -11,6 +11,7 @@
   "scripts": {
     "build": "NODE_ENV=production webpack",
     "watch": "NODE_ENV=development webpack --watch",
+    "watch:prod": "NODE_ENV=production webpack --watch",
     "test": "jest",
     "tdd": "jest --watch"
   },
