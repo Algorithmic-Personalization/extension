@@ -11,8 +11,17 @@ export const RecommendationC: React.FC<Recommendation & {handleRecommendationCli
 	handleRecommendationClicked,
 	...rec
 }) => (
-	<div onClick={handleRecommendationClicked}>
-		<a href={rec.url}>
+	<Box
+		onClick={handleRecommendationClicked}
+		sx={{
+			mb: 2,
+		}}
+	>
+		<a href={rec.url}
+			style={{
+				textDecoration: 'none',
+			}}
+		>
 			<Box sx={{
 				display: 'flex',
 			}}>
@@ -25,17 +34,34 @@ export const RecommendationC: React.FC<Recommendation & {handleRecommendationCli
 						sx={{
 							width: 168,
 							height: 94,
+							borderRadius: 2,
 						}}
 					/>
 				</Box>
 				<Box>
-					<Typography variant='body2' component='span'>
+					<Typography
+						variant='h1'
+						component='div'
+						sx={{
+							mb: 1,
+						}}
+					>
 						{rec.title}
 					</Typography>
+					<Typography
+						variant='body1'
+						component='div'
+					>
+						{rec.channelName}
+					</Typography>
+					<Typography
+						variant='body1'
+						component='div'
+					>{rec.views}&nbsp;•&nbsp;{rec.publishedSince}</Typography>
 				</Box>
 			</Box>
 		</a>
-	</div>
+	</Box>
 );
 
 export default RecommendationC;

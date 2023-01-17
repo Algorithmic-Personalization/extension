@@ -18,7 +18,7 @@ module.exports = {
 	entry: './src/content-script.tsx',
 	output: {
 		filename: 'content-script.js',
-		path: path.resolve(__dirname, 'dist', 'extension', 'chrome'),
+		path: path.resolve(__dirname, 'dist', 'chrome'),
 	},
 	resolve: {
 		extensions: ['.ts', '.tsx', '.js'],
@@ -73,8 +73,8 @@ module.exports = {
 				onEnd: {
 					copy: [
 						{
-							source: 'dist/extension/chrome',
-							destination: 'dist/extension/firefox',
+							source: 'dist/chrome',
+							destination: 'dist/firefox',
 						},
 					],
 				},
@@ -84,12 +84,12 @@ module.exports = {
 			events: {
 				onEnd: {
 					delete: [
-						'dist/extension/firefox/manifest.json',
+						'dist/firefox/manifest.json',
 					],
 					move: [
 						{
-							source: 'dist/extension/firefox/manifest.firefox.json',
-							destination: 'dist/extension/firefox/manifest.json',
+							source: 'dist/firefox/manifest.firefox.json',
+							destination: 'dist/firefox/manifest.json',
 						},
 					],
 				},
@@ -100,12 +100,12 @@ module.exports = {
 				onEnd: {
 					archive: [
 						{
-							source: 'dist/extension/chrome',
-							destination: 'dist/extension/chrome.zip',
+							source: 'dist/chrome',
+							destination: 'dist/chrome.zip',
 						},
 						{
-							source: 'dist/extension/firefox',
-							destination: 'dist/extension/firefox.zip',
+							source: 'dist/firefox',
+							destination: 'dist/firefox.zip',
 						},
 					],
 				},
