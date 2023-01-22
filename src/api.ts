@@ -36,15 +36,16 @@ type StoredEvent = {
 
 const retryDelay = 60000;
 const maxAttempts = 10;
+const eventsStorageKey = 'events';
 
-const loadStoredEvents = () => (JSON.parse(localStorage.getItem('events') ?? '[]') as StoredEvent[]).map(e => ({
+const loadStoredEvents = () => (JSON.parse(localStorage.getItem(eventsStorageKey) ?? '[]') as StoredEvent[]).map(e => ({
 	...e,
 	// Need to restore the Date which will not be properly deserialized
 	lastAttempt: new Date(e.lastAttempt),
 }));
 
 const saveStoredEvents = (events: StoredEvent[]) => {
-	localStorage.setItem('events', JSON.stringify(events));
+	localStorage.setItem(eventsStorageKey, JSON.stringify(events));
 };
 
 const retryToPostStoredEvents = async () => {
@@ -230,7 +231,7 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 
 		logout() {
 			localStorage.removeItem('participantCode');
-			localStorage.removeItem('eventsToSend');
+			localStorage.removeItem(eventsStorageKey);
 			sessionStorage.removeItem('sessionUuid');
 			sessionStorage.removeItem('cfg');
 			participantCode = '';
