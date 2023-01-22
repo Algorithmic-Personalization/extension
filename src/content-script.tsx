@@ -3,13 +3,14 @@ import {createRoot} from 'react-dom/client';
 
 import {ThemeProvider} from '@mui/material';
 
-import {isOnVideoPage} from './lib';
+import {isOnVideoPage, isVideoPage} from './lib';
 import App from './App';
 import theme from './theme';
 
 import {defaultApi as api, apiProvider as ApiProvider} from './apiProvider';
 
 import Event, {EventType} from './common/models/event';
+import WatchTimeEvent from './common/models/watchTimeEvent';
 
 let root: HTMLElement | undefined;
 let previousUrl: string | undefined;
@@ -18,8 +19,69 @@ if (api.getSession() === undefined) {
 	api.newSession().catch(console.error);
 }
 
+let watchTime: number;
+
+const attemptToSaveWatchTime = (url: string) => {
+	console.log('ATTEMPTING TO SAVE WATCH TIME FOR', url, 'OF', watchTime, 'SECONDS');
+
+	if (watchTime && watchTime > 0) {
+		const event = new WatchTimeEvent(watchTime);
+		event.url = url;
+		api.postEvent(event, true).catch(console.error);
+		watchTime = 0;
+	}
+};
+
+const watchVideoEvents = () => {
+	const videoElement = document.querySelector('.html5-video-container video');
+
+	if (!videoElement) {
+		return;
+	}
+
+	const video = videoElement as HTMLVideoElement;
+
+	watchTime = 0;
+	let prevWatchTime = 0;
+	let prevCurrentTime = 0;
+
+	console.log('WATCHING VIDEO TIME UPDATE EVENTS');
+
+	video.addEventListener('timeupdate', () => {
+		const ct = video.currentTime;
+		const deltaT = ct - prevCurrentTime;
+		prevCurrentTime = ct;
+
+		if (deltaT > 0 && deltaT < 1) {
+			watchTime += deltaT;
+
+			// Only log every 5 seconds to avoid spamming the console
+			if (watchTime - prevWatchTime > 5) {
+				console.log('WATCH TIME', watchTime);
+				prevWatchTime = watchTime;
+			}
+		}
+	});
+};
+
+window.addEventListener('unload', () => {
+	attemptToSaveWatchTime(window.location.href);
+});
+
 const observer = new MutationObserver(() => {
 	if (window.location.href !== previousUrl) {
+		if (isVideoPage(previousUrl)) {
+			attemptToSaveWatchTime(previousUrl);
+		}
+
+		if (isOnVideoPage()) {
+			// If we arrive on a video page, start watching the video
+			// for watch time events...
+			// Beware that this will reset watch time of previous video.
+			watchVideoEvents();
+		}
+
+		// Update the previous URL AFTER saving the watch time
 		previousUrl = window.location.href;
 
 		const event = new Event();
@@ -28,10 +90,6 @@ const observer = new MutationObserver(() => {
 		event.url = window.location.href;
 
 		api.postEvent(event, true).catch(console.error);
-	}
-
-	if (!isOnVideoPage()) {
-		return;
 	}
 
 	const related = document.querySelector('#related');
