@@ -114,7 +114,7 @@ module.exports = {
 	devtool: mode === 'development' ? 'inline-source-map' : false,
 	optimization: {
 		innerGraph: true,
-		mangleExports: 'size',
-		moduleIds: 'size',
+		mangleExports: 'deterministic',
+		moduleIds: 'deterministic',
 	},
 };
