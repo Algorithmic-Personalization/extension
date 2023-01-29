@@ -5,8 +5,8 @@ import crypto from 'crypto';
 import Event, {EventType} from '../common/models/event';
 import RecommendationsEvent from '../common/models/recommendationsEvent';
 
-import type Recommendation from '../models/Recommendation';
-import type {ExperimentConfig} from '../createRecommendationsList';
+import type Recommendation from '../common/types/Recommendation';
+import type {IndividualExperimentConfig} from '../common/types/IndividualExperimentConfig';
 import createRecommendationsList from '../createRecommendationsList';
 
 import {
@@ -60,7 +60,7 @@ const debugWrapper = (r: Recommendation) => {
 
 export const RecommendationsListC: React.FC<{
 	url: string;
-	cfg: ExperimentConfig;
+	cfg: IndividualExperimentConfig;
 	postEvent: (e: Event) => Promise<void>;
 }> = ({url, cfg, postEvent}) => {
 	const [nonPersonalizedRecommendations, setNonPersonalizedRecommendations] = useState<Recommendation[]>([]);

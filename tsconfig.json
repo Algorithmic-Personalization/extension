@@ -16,7 +16,8 @@
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
 		"outDir": "build",
-		"skipLibCheck": true
+		"skipLibCheck": true,
+		"sourceMap": true,
 	},
 	"include": ["."],
 	"exclude": ["node_modules", "dist"],

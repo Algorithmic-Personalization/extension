@@ -1,4 +1,4 @@
-import type Recommendation from './models/Recommendation';
+import type Recommendation from './common/types/Recommendation';
 
 import {has} from './common/util';
 
@@ -30,6 +30,34 @@ const getDataContainingList = (results: unknown[], useCredentials: boolean): unk
 	}
 
 	return contents;
+};
+
+const getHoverAnimationUrl = (r: Record<string, unknown>): string | undefined => {
+	const {richThumbnail} = r;
+
+	if (!has('movingThumbnailRenderer')(richThumbnail) || typeof richThumbnail.movingThumbnailRenderer !== 'object' || !richThumbnail.movingThumbnailRenderer) {
+		return undefined;
+	}
+
+	const {movingThumbnailRenderer} = richThumbnail;
+
+	if (!has('movingThumbnailDetails')(movingThumbnailRenderer) || typeof movingThumbnailRenderer.movingThumbnailDetails !== 'object' || !movingThumbnailRenderer.movingThumbnailDetails) {
+		return undefined;
+	}
+
+	const {movingThumbnailDetails} = movingThumbnailRenderer;
+
+	if (!has('thumbnails')(movingThumbnailDetails) || !Array.isArray(movingThumbnailDetails.thumbnails)) {
+		return undefined;
+	}
+
+	const [thumbnail] = movingThumbnailDetails.thumbnails as unknown[];
+
+	if (!has('url')(thumbnail) || typeof thumbnail.url !== 'string') {
+		return undefined;
+	}
+
+	return thumbnail.url;
 };
 
 export const fetchRecommendations = async (videoUrl: string, useCredentials: boolean): Promise<Recommendation[]> => {
@@ -181,37 +209,13 @@ export const fetchRecommendations = async (videoUrl: string, useCredentials: boo
 			return undefined;
 		}
 
-		const {richThumbnail} = r;
-
-		if (!has('movingThumbnailRenderer')(richThumbnail) || typeof richThumbnail.movingThumbnailRenderer !== 'object' || !richThumbnail.movingThumbnailRenderer) {
-			return undefined;
-		}
-
-		const {movingThumbnailRenderer} = richThumbnail;
-
-		if (!has('movingThumbnailDetails')(movingThumbnailRenderer) || typeof movingThumbnailRenderer.movingThumbnailDetails !== 'object' || !movingThumbnailRenderer.movingThumbnailDetails) {
-			return undefined;
-		}
-
-		const {movingThumbnailDetails} = movingThumbnailRenderer;
-
-		if (!has('thumbnails')(movingThumbnailDetails) || !Array.isArray(movingThumbnailDetails.thumbnails)) {
-			return undefined;
-		}
-
-		const [thumbnail] = movingThumbnailDetails.thumbnails as unknown[];
-
-		if (!has('url')(thumbnail) || typeof thumbnail.url !== 'string') {
-			return undefined;
-		}
-
 		const rec: Recommendation = {
 			title: title.simpleText,
 			videoId: r.videoId,
 			url: `/watch?v=${r.videoId}`,
 			channelName: runs[0].text,
 			miniatureUrl: `https://i.ytimg.com/vi/${r.videoId}/hqdefault.jpg`,
-			hoverAnimationUrl: thumbnail.url,
+			hoverAnimationUrl: getHoverAnimationUrl(r),
 			views: shortViewCountText.simpleText,
 			publishedSince: publishedTimeText.simpleText,
 			personalization: 'unknown',

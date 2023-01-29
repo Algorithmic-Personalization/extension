@@ -1,12 +1,8 @@
-import type Recommendation from './models/Recommendation';
+import type Recommendation from './common/types/Recommendation';
 import {removeDuplicates, shuffleArray} from './common/util';
+import type IndividualExperimentConfig from './common/types/IndividualExperimentConfig';
 
-export type ExperimentConfig = {
-	arm: 'control' | 'treatment';
-	nonPersonalizedProbability: number;
-};
-
-export type RecommendationsListCreator = (cfg: ExperimentConfig) =>
+export type RecommendationsListCreator = (cfg: IndividualExperimentConfig) =>
 (nonPersonalized: Recommendation[], personalized: Recommendation[]) =>
 Recommendation[];
 
