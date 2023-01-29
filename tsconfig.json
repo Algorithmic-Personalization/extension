@@ -18,6 +18,8 @@
 		"outDir": "build",
 		"skipLibCheck": true,
 		"sourceMap": true,
+		"module": "esnext",
+		"moduleResolution": "node"
 	},
 	"include": ["."],
 	"exclude": ["node_modules", "dist"],

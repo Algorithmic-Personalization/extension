@@ -111,5 +111,10 @@ module.exports = {
 			},
 		}),
 	],
-	devtool: 'inline-source-map',
+	devtool: mode === 'development' ? 'inline-source-map' : false,
+	optimization: {
+		innerGraph: true,
+		mangleExports: 'size',
+		moduleIds: 'size',
+	},
 };

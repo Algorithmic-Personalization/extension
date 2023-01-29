@@ -8,6 +8,7 @@
   "license": "The Unlicense",
   "private": true,
   "packageManager": "yarn@3.3.0",
+  "sideEffects": false,
   "scripts": {
     "build": "NODE_ENV=production webpack",
     "build:dev": "NODE_ENV=development webpack",
