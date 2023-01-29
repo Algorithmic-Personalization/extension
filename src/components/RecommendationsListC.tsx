@@ -104,8 +104,10 @@ export const RecommendationsListC: React.FC<{
 
 		log({
 			loaded,
-			nonPersonalizedRecommendations: hashRecommendationsList(nonPersonalizedRecommendations),
-			defaultRecommendations: hashRecommendationsList(defaultRecommendations),
+			nonPersonalizedRecommendations,
+			nonPersonalizedRecommendationsHash: hashRecommendationsList(nonPersonalizedRecommendations),
+			defaultRecommendations,
+			defaultRecommendationsHash: hashRecommendationsList(defaultRecommendations),
 		});
 
 		const [np, p] = setPersonalizedFlags(nonPersonalizedRecommendations, defaultRecommendations);
