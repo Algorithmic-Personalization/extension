@@ -49,7 +49,17 @@ module.exports = {
 					to: 'manifest.firefox.json',
 					transform(content) {
 						const manifest = JSON.parse(content);
+
 						manifest.permissions = hostPermissions;
+
+						// eslint-disable-next-line camelcase
+						manifest.browser_specific_settings = {
+							gecko: {
+								// eslint-disable-next-line camelcase
+								update_url: 'https://raw.githubusercontent.com/djfm/ytdpnl-extension/main/update_manifest.json',
+							},
+						};
+
 						return JSON.stringify(manifest, null, '\t');
 					},
 				},
