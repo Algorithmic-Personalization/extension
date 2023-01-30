@@ -18,7 +18,7 @@ please checkout this commit:
 
 ```bash
 cd ytdpnl-extension
-git checkout 49510318b4bf0c41c0212f03c38da5ec8eebca98
+git checkout ad865c4f
 ```
 
 ## Install the dependencies
