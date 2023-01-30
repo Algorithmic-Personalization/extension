@@ -131,6 +131,7 @@ export const RecommendationsListC: React.FC<{
 	const createRecommendationClickHandler = (rec: Recommendation) => async () => {
 		const event = new Event();
 		event.url = rec.url;
+		event.context = window.location.href;
 
 		if (rec.personalization === 'non-personalized') {
 			event.type = EventType.NON_PERSONALIZED_CLICKED;

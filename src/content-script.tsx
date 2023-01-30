@@ -88,6 +88,7 @@ const observer = new MutationObserver(() => {
 
 		event.type = EventType.PAGE_VIEW;
 		event.url = window.location.href;
+		event.context = document.referrer;
 
 		api.postEvent(event, true).catch(console.error);
 	}
