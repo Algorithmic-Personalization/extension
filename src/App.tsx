@@ -129,7 +129,7 @@ const App: React.FC = () => {
 
 	if (!loggedIn) {
 		return (
-			<Typography>
+			<Typography color='text.primary'>
 				You need to be logged in to YouTube to use this extension.
 			</Typography>
 		);
@@ -143,7 +143,7 @@ const App: React.FC = () => {
 					flexDirection: 'column',
 					alignItems: 'stretch',
 				}}>
-					<Typography sx={{mb: 2}}>
+					<Typography sx={{mb: 2}} color='text.primary'>
 						Welcome to the experiment!<br />
 						Please enter your participant code to continue.
 					</Typography>
@@ -154,7 +154,7 @@ const App: React.FC = () => {
 							setParticipantCode(e.target.value);
 						}}
 					/>
-					<FormHelperText>
+					<FormHelperText sx={{mb: 2}}>
 						This is the code that has been give to you by e-mail.
 					</FormHelperText>
 					<Button type='submit' variant='contained'>
@@ -168,7 +168,7 @@ const App: React.FC = () => {
 
 	if (!cfg) {
 		return (
-			<Typography>Loading config...</Typography>
+			<Typography color='text.primary'>Loading config...</Typography>
 		);
 	}
 
@@ -177,6 +177,8 @@ const App: React.FC = () => {
 		<Link onClick={handleLogout} sx={{
 			my: 2,
 			display: 'block',
+			cursor: 'pointer',
+			textDecoration: 'none',
 		}}>
 			log out of experiment
 		</Link>

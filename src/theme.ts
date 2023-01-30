@@ -1,10 +1,16 @@
 import {createTheme} from '@mui/material';
 
-export const theme = createTheme({});
+const isDarkMode = Boolean(document.querySelector('html[dark]'));
+
+export const theme = createTheme({
+	palette: {
+		mode: isDarkMode ? 'dark' : 'light',
+	},
+});
 
 theme.typography.h1 = {
 	fontSize: '14px',
-	color: 'rgb(15, 15, 15)',
+	color: isDarkMode ? 'rgb(241, 241, 241)' : 'rgb(15, 15, 15)',
 	fontWeight: 500,
 	fontFamily: 'Roboto, Arial, sans-serif',
 	textOverflow: 'ellipsis',
@@ -13,7 +19,7 @@ theme.typography.h1 = {
 
 theme.typography.body1 = {
 	fontSize: '12px',
-	color: 'rgb(96, 96, 96)',
+	color: isDarkMode ? 'rgb(170, 170, 170)' : 'rgb(96, 96, 96)',
 	fontWeight: 400,
 	fontFamily: 'Roboto, Arial, sans-serif',
 	textOverflow: 'ellipsis',
