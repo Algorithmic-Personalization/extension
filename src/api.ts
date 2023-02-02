@@ -35,7 +35,6 @@ type StoredEvent = {
 };
 
 const retryDelay = 60000;
-const maxAttempts = 10;
 const eventsStorageKey = 'events';
 
 const loadStoredEvents = () => (JSON.parse(localStorage.getItem(eventsStorageKey) ?? '[]') as StoredEvent[]).map(e => ({
@@ -44,19 +43,46 @@ const loadStoredEvents = () => (JSON.parse(localStorage.getItem(eventsStorageKey
 	lastAttempt: new Date(e.lastAttempt),
 }));
 
+const saveStoredEventsFallback = (events: StoredEvent[], maxAttemptsCutOff: number) => {
+	console.log('Thinning events some to those attempted', maxAttemptsCutOff, 'times');
+	const newEvents = events.filter(e => e.attempts < maxAttemptsCutOff);
+	try {
+		localStorage.setItem(eventsStorageKey, JSON.stringify(newEvents));
+		console.log('Stored events locally after thinning to', maxAttemptsCutOff, 'attempts');
+	} catch (e) {
+		if (maxAttemptsCutOff > 0) {
+			saveStoredEventsFallback(newEvents, maxAttemptsCutOff - 1);
+		} else {
+			console.error('Failed to store events locally, giving up...', e);
+		}
+	}
+};
+
 const saveStoredEvents = (events: StoredEvent[]) => {
-	localStorage.setItem(eventsStorageKey, JSON.stringify(events));
+	try {
+		const json = JSON.stringify(events);
+		console.log('Attempting to store events locally with a total size of approx.', json.length / 512, 'KB');
+		localStorage.setItem(eventsStorageKey, json);
+		console.log('Cached events locally with success.');
+	} catch (e) {
+		console.error('Failed to store events locally, forgetting older ones...', e);
+		let maxMaxAttempts = 0;
+		for (const event of events) {
+			maxMaxAttempts = Math.max(maxMaxAttempts, event.attempts);
+		}
+
+		saveStoredEventsFallback(events, maxMaxAttempts);
+	}
 };
 
 const retryToPostStoredEvents = async () => {
 	const storedEvents = loadStoredEvents();
 
-	const promises = storedEvents.map(async storedEvent => {
+	for (const storedEvent of storedEvents) {
 		const lastAttempt = Number(new Date(storedEvent.lastAttempt));
 		const remaining = lastAttempt + retryDelay - Date.now();
 		if (remaining > 0 && !storedEvent.tryImmediately) {
-			console.log('Do not retrying to post event', storedEvent.event.localUuid, 'until', remaining, 'ms have passed');
-			return storedEvent;
+			continue;
 		}
 
 		storedEvent.attempts += 1;
@@ -64,20 +90,17 @@ const retryToPostStoredEvents = async () => {
 
 		const api = createApi(storedEvent.apiUrl, storedEvent.participantCode);
 
+		// eslint-disable-next-line no-await-in-loop
 		const result = await api.postEvent(storedEvent.event, false);
 		if (result) {
 			storedEvent.persisted = true;
 		} else {
 			storedEvent.lastAttempt = new Date();
 		}
+	}
 
-		return storedEvent;
-	});
-
-	const updated = await Promise.all(promises);
-
-	const remainingEvents = updated.filter(e => !e.persisted && e.attempts < maxAttempts);
-	console.log(`Stored ${
+	const remainingEvents = storedEvents.filter(e => !e.persisted);
+	console.log(`Uploaded ${
 		storedEvents.length - remainingEvents.length
 	} events cached previously, ${remainingEvents.length} remain...`);
 
