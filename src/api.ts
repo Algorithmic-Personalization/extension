@@ -3,6 +3,8 @@ import type Session from './common/models/session';
 import type Event from './common/models/event';
 import {type ParticipantConfig} from './common/models/experimentConfig';
 
+import {compressToUTF16, decompressFromUTF16} from 'lz-string';
+
 import {
 	postCreateSession,
 	postCheckParticipantCode,
@@ -37,17 +39,33 @@ type StoredEvent = {
 const retryDelay = 60000;
 const eventsStorageKey = 'events';
 
-const loadStoredEvents = () => (JSON.parse(localStorage.getItem(eventsStorageKey) ?? '[]') as StoredEvent[]).map(e => ({
-	...e,
-	// Need to restore the Date which will not be properly deserialized
-	lastAttempt: new Date(e.lastAttempt),
-}));
+const loadStoredEvents = () => {
+	const dataStr = localStorage.getItem(eventsStorageKey);
+
+	if (!dataStr) {
+		return [];
+	}
+
+	const json = localStorage.getItem('lz-string') === 'true'
+		? decompressFromUTF16(dataStr)
+		: dataStr;
+
+	if (!json) {
+		return [];
+	}
+
+	return (JSON.parse(json) as StoredEvent[]).map(e => ({
+		...e,
+		// Need to restore the Date which will not be properly deserialized
+		lastAttempt: new Date(e.lastAttempt),
+	}));
+};
 
 const saveStoredEventsFallback = (events: StoredEvent[], maxAttemptsCutOff: number) => {
 	console.log('Thinning events some to those attempted', maxAttemptsCutOff, 'times');
 	const newEvents = events.filter(e => e.attempts < maxAttemptsCutOff);
 	try {
-		localStorage.setItem(eventsStorageKey, JSON.stringify(newEvents));
+		localStorage.setItem(eventsStorageKey, compressToUTF16(JSON.stringify(newEvents)));
 		console.log('Stored events locally after thinning to', maxAttemptsCutOff, 'attempts');
 	} catch (e) {
 		if (maxAttemptsCutOff > 0) {
@@ -60,9 +78,10 @@ const saveStoredEventsFallback = (events: StoredEvent[], maxAttemptsCutOff: numb
 
 const saveStoredEvents = (events: StoredEvent[]) => {
 	try {
-		const json = JSON.stringify(events);
-		console.log('Attempting to store events locally with a total size of approx.', json.length / 512, 'KB');
-		localStorage.setItem(eventsStorageKey, json);
+		localStorage.setItem('lz-string', 'true');
+		const data = compressToUTF16(JSON.stringify(events));
+		console.log('Attempting to store events locally with a total size of approx.', data.length / 512, 'KB');
+		localStorage.setItem(eventsStorageKey, data);
 		console.log('Cached events locally with success.');
 	} catch (e) {
 		console.error('Failed to store events locally, forgetting older ones...', e);
@@ -136,7 +155,7 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 
 		storedEvents.push(toStore);
 
-		localStorage.setItem('events', JSON.stringify(storedEvents));
+		saveStoredEvents(storedEvents);
 	};
 
 	const headers = () => ({
