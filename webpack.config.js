@@ -55,7 +55,7 @@ module.exports = {
 						// eslint-disable-next-line camelcase
 						manifest.browser_specific_settings = {
 							gecko: {
-								id: '	{e2d736d1-6589-4407-9c3d-6ec3ec7afe77}',
+								id: '{e2d736d1-6589-4407-9c3d-6ec3ec7afe77}',
 								// eslint-disable-next-line camelcase
 								update_url: 'https://raw.githubusercontent.com/djfm/ytdpnl-extension/main/update_manifest.json',
 							},
