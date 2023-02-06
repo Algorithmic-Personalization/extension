@@ -1,0 +1,16 @@
+- increment version in `src/manifest.base.json` and `package.json`
+- build with `yarn build`
+- copy chrome extension to archive folder
+- commit
+- edit the README.md to reflect the new version (update commit id for reviewer)
+- commit
+- submit extension to mozilla
+  - just the zip file
+  - separately: zip with source code
+    - without `node_modules`
+    - without unnecessary `dist` files
+    - without `.git`
+- once extension is validated by mozilla
+  - add the `.xpi` to the archive folder
+  - update `update_manifest.json` with the new version
+  - commit

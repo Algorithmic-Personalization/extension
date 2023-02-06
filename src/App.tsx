@@ -45,7 +45,7 @@ const UpdateLinkC: React.FC<{link: string | undefined}> = ({link}) => {
 				There is a new version of the extension for the experiment available,
 				please download it and install it.
 			</Typography>
-			<a href={link}>
+			<a href={link} style={{textDecoration: 'none'}}>
 				<Button
 					variant='contained'
 					color='primary'
