@@ -1,3 +1,4 @@
+import semver from 'semver';
 import React, {useEffect, useState} from 'react';
 
 import {
@@ -15,9 +16,12 @@ import Event from './common/models/event';
 import MessageC from './common/components/MessageC';
 
 import RecommendationsListC from './components/RecommendationsListC';
-import {log} from './lib';
+import {type UpdateManifest, log} from './lib';
 
 import {useApi} from './apiProvider';
+
+import {version} from '../package.json';
+import updateManifest from './geckoUpdateUrl.json';
 
 const loadLocalConfig = (): ParticipantConfig | undefined => {
 	const item = sessionStorage.getItem('cfg');
@@ -28,6 +32,35 @@ const loadLocalConfig = (): ParticipantConfig | undefined => {
 	return undefined;
 };
 
+const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
+
+const UpdateLinkC: React.FC<{link: string | undefined}> = ({link}) => {
+	if (!link) {
+		return null;
+	}
+
+	return (
+		<>
+			<Typography color='text.primary'>
+				There is a new version of the extension for the experiment available,
+				please download it and install it.
+			</Typography>
+			<a href={link}>
+				<Button
+					variant='contained'
+					color='primary'
+					sx={{
+						mt: 1,
+						mb: 2,
+					}}
+				>
+					Download Update
+				</Button>
+			</a>
+		</>
+	);
+};
+
 const App: React.FC = () => {
 	const localCode = localStorage.getItem('participantCode') ?? '';
 	const [currentUrl, setCurrentUrl] = useState<string>('');
@@ -36,6 +69,7 @@ const App: React.FC = () => {
 	const [error, setError] = useState<string | undefined>();
 	const [cfg, setCfg] = useState(loadLocalConfig());
 	const [loggedIn, setLoggedIn] = useState<boolean>(false);
+	const [updateLink, setUpdateLink] = useState<string | undefined>();
 
 	const api = useApi();
 
@@ -74,6 +108,32 @@ const App: React.FC = () => {
 	};
 
 	useEffect(() => {
+		console.log('YouTube Recommendations Experiment v', version);
+		console.log('Fetching list of available updates...');
+
+		fetch(updateManifest.update_url).then(async r => r.json()).then((data: UpdateManifest) => {
+			console.log('Available updates:', data);
+			const {updates} = data.addons[updateManifest.id];
+
+			let maxVersion = version;
+			let ffLink: string | undefined;
+
+			for (const update of updates) {
+				if (semver.gt(update.version, maxVersion)) {
+					maxVersion = update.version;
+					ffLink = update.update_link;
+				}
+			}
+
+			if (ffLink) {
+				if (isFirefox) {
+					setUpdateLink(ffLink);
+				} else {
+					setUpdateLink(ffLink.replace(/firefox/g, 'chrome').replace(/\.xpi$/, '.zip'));
+				}
+			}
+		}).catch(console.error);
+
 		updateUrl();
 		updateLoggedIn();
 
@@ -173,6 +233,7 @@ const App: React.FC = () => {
 	}
 
 	return (<>
+		<UpdateLinkC link={updateLink} />
 		<RecommendationsListC url={currentUrl} cfg={cfg} postEvent={postEvent}/>
 		<Link onClick={handleLogout} sx={{
 			my: 2,

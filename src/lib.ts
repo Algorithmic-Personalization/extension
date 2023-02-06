@@ -12,3 +12,12 @@ export const log = (...args: any[]) => {
 
 	console.log(...args);
 };
+
+export type UpdateManifest = {
+	addons: Record<string, {
+		updates: Array<{
+			version: string;
+			update_link: string;
+		}>;
+	}>;
+};

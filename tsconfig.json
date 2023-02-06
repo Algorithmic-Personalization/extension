@@ -19,7 +19,8 @@
 		"skipLibCheck": true,
 		"sourceMap": true,
 		"module": "esnext",
-		"moduleResolution": "node"
+		"moduleResolution": "node",
+		"resolveJsonModule": true
 	},
 	"include": ["."],
 	"exclude": ["node_modules", "dist"],

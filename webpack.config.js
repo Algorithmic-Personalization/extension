@@ -3,6 +3,8 @@ const CopyPlugin = require('copy-webpack-plugin');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 const {EnvironmentPlugin} = require('webpack');
 
+const fireFoxManifest = require('./src/geckoUpdateUrl');
+
 const mode = process.env.NODE_ENV || 'development';
 
 const hostPermissions = [
@@ -54,11 +56,7 @@ module.exports = {
 
 						// eslint-disable-next-line camelcase
 						manifest.browser_specific_settings = {
-							gecko: {
-								id: '{e2d736d1-6589-4407-9c3d-6ec3ec7afe77}',
-								// eslint-disable-next-line camelcase
-								update_url: 'https://raw.githubusercontent.com/djfm/ytdpnl-extension/main/update_manifest.json',
-							},
+							gecko: fireFoxManifest,
 						};
 
 						return JSON.stringify(manifest, null, '\t');
