@@ -20,7 +20,7 @@ import {type UpdateManifest, log} from './lib';
 
 import {useApi} from './apiProvider';
 
-import {version} from '../package.json';
+import packageJson from '../package.json';
 import updateManifest from './geckoUpdateUrl.json';
 
 const loadLocalConfig = (): ParticipantConfig | undefined => {
@@ -43,7 +43,9 @@ const UpdateLinkC: React.FC<{link: string | undefined}> = ({link}) => {
 		<>
 			<Typography color='text.primary'>
 				There is a new version of the extension for the experiment available,
-				please download it and install it.
+				please download it and install it manually. The source-code of the extension
+				is available on <Link href='https://github.com/djfm/ytdpnl-extension' target='_blank' rel='noreferrer'>GitHub</Link>,
+				you can build it by yourself if you want to ensure the code&apos;s integrity.
 			</Typography>
 			<a href={link} style={{textDecoration: 'none'}}>
 				<Button
@@ -108,14 +110,14 @@ const App: React.FC = () => {
 	};
 
 	useEffect(() => {
-		console.log('YouTube Recommendations Experiment v', version);
+		console.log('YouTube Recommendations Experiment v', packageJson.version);
 		console.log('Fetching list of available updates...');
 
 		fetch(updateManifest.update_url).then(async r => r.json()).then((data: UpdateManifest) => {
 			console.log('Available updates:', data);
 			const {updates} = data.addons[updateManifest.id];
 
-			let maxVersion = version;
+			let maxVersion = packageJson.version;
 			let ffLink: string | undefined;
 
 			for (const update of updates) {
