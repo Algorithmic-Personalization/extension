@@ -63,14 +63,28 @@ const UpdateLinkC: React.FC<{link: string | undefined}> = ({link}) => {
 	);
 };
 
+const debounceMs = (ms: number) => (fn: () => void) => {
+	let timeout: NodeJS.Timeout;
+
+	return () => {
+		if (timeout) {
+			clearTimeout(timeout);
+		}
+
+		timeout = setTimeout(fn, ms);
+	};
+};
+
+const debounce = debounceMs(5000);
+
 const App: React.FC = () => {
 	const localCode = localStorage.getItem('participantCode') ?? '';
 	const [currentUrl, setCurrentUrl] = useState<string>('');
 	const [participantCode, setParticipantCode] = useState<string>(localCode);
-	const [participantCodeValid, setParticipantCodeValid] = useState<boolean>(localCode !== '');
+	const [participantCodeValid, setParticipantCodeValid] = useState<boolean>(localStorage.getItem('participantCodeValid') === 'true');
 	const [error, setError] = useState<string | undefined>();
 	const [cfg, setCfg] = useState(loadLocalConfig());
-	const [loggedIn, setLoggedIn] = useState<boolean>(false);
+	const [loggedIn, setLoggedIn] = useState<boolean>(sessionStorage.getItem('loggedIn') === 'true');
 	const [updateLink, setUpdateLink] = useState<string | undefined>();
 
 	const api = useApi();
@@ -80,6 +94,9 @@ const App: React.FC = () => {
 		sessionStorage.removeItem('cfg');
 		setParticipantCode('');
 		setParticipantCodeValid(false);
+		localStorage.removeItem('participantCode');
+		localStorage.removeItem('participantCodeValid');
+		localStorage.removeItem('loggedIn');
 	};
 
 	const updateUrl = () => {
@@ -89,14 +106,16 @@ const App: React.FC = () => {
 		}
 	};
 
-	const updateLoggedIn = () => {
+	const updateLoggedIn = debounce(() => {
 		const loggedInWidget = document.querySelector('#avatar-btn');
 		if (loggedInWidget) {
+			sessionStorage.setItem('loggedIn', 'true');
 			setLoggedIn(true);
 		} else {
+			sessionStorage.setItem('loggedIn', 'false');
 			setLoggedIn(false);
 		}
-	};
+	});
 
 	const postEvent = async (e: Event) => {
 		const enrichedEvent = new Event();
@@ -181,10 +200,13 @@ const App: React.FC = () => {
 
 		if (!valid) {
 			setError('Invalid participant code');
+			setParticipantCodeValid(false);
+			localStorage.setItem('participantCodeValid', 'false');
 			return;
 		}
 
 		setParticipantCodeValid(true);
+		localStorage.setItem('participantCodeValid', 'true');
 		api.setAuth(participantCode);
 		api.newSession().catch(console.error);
 	};
