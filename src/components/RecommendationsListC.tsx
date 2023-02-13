@@ -122,6 +122,7 @@ export const RecommendationsListC: React.FC<{
 		);
 
 		event.url = url;
+		event.context = window.location.href;
 
 		postEvent(event).catch(console.error);
 

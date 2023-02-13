@@ -5,6 +5,8 @@ import {type ParticipantConfig} from './common/models/experimentConfig';
 
 import {compressToUTF16, decompressFromUTF16} from 'lz-string';
 
+import packageJson from '../package.json';
+
 import {
 	postCreateSession,
 	postCheckParticipantCode,
@@ -248,6 +250,8 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 
 		async postEvent(inputEvent: Event, storeForRetry: boolean) {
 			const event = {...inputEvent};
+
+			event.extensionVersion = packageJson.version;
 
 			if (event.sessionUuid === '') {
 				await this.ensureSession();
