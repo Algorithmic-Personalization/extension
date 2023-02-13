@@ -1,6 +1,6 @@
 import {type Maybe, makeApiVerbCreator, memoizeTemporarily} from './common/util';
 import type Session from './common/models/session';
-import type Event from './common/models/event';
+import Event, {EventType} from './common/models/event';
 import {type ParticipantConfig} from './common/models/experimentConfig';
 
 import {compressToUTF16, decompressFromUTF16} from 'lz-string';
@@ -13,6 +13,7 @@ import {
 } from './common/routes';
 
 export type Api = {
+	sendPageView: () => void;
 	createSession: () => Promise<Maybe<Session>>;
 	checkParticipantCode: (participantCode: string) => Promise<boolean>;
 	setAuth: (participantCode: string) => void;
@@ -215,6 +216,7 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 				sessionUuid = res.value.uuid;
 				sessionStorage.setItem('sessionUuid', sessionUuid);
 				console.log('New session', sessionUuid);
+				api.sendPageView();
 				return true;
 			}
 
@@ -278,6 +280,16 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 			sessionStorage.removeItem('cfg');
 			participantCode = '';
 			sessionUuid = '';
+		},
+
+		sendPageView() {
+			const event = new Event();
+
+			event.type = EventType.PAGE_VIEW;
+			event.url = window.location.href;
+			event.context = document.referrer;
+
+			api.postEvent(event, true).catch(console.error);
 		},
 	};
 

@@ -9,7 +9,6 @@ import theme from './theme';
 
 import {defaultApi as api, apiProvider as ApiProvider} from './apiProvider';
 
-import Event, {EventType} from './common/models/event';
 import WatchTimeEvent from './common/models/watchTimeEvent';
 
 let root: HTMLElement | undefined;
@@ -84,13 +83,7 @@ const observer = new MutationObserver(() => {
 		// Update the previous URL AFTER saving the watch time
 		previousUrl = window.location.href;
 
-		const event = new Event();
-
-		event.type = EventType.PAGE_VIEW;
-		event.url = window.location.href;
-		event.context = document.referrer;
-
-		api.postEvent(event, true).catch(console.error);
+		api.sendPageView();
 	}
 
 	const related = document.querySelector('#related');
