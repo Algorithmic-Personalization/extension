@@ -12,7 +12,7 @@ import {
 	postCheckParticipantCode,
 	getParticipantConfig,
 	postEvent,
-} from './common/routes';
+} from './common/clientRoutes';
 
 export type Api = {
 	sendPageView: () => void;
