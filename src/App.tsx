@@ -13,7 +13,7 @@ import {
 import {type ParticipantConfig} from './common/models/experimentConfig';
 import Event from './common/models/event';
 
-import MessageC from './common/components/MessageC';
+import MessageC from './components/MessageC';
 
 import RecommendationsListC from './components/RecommendationsListC';
 import {type UpdateManifest, log} from './lib';
