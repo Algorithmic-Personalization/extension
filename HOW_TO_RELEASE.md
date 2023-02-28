@@ -1,7 +1,7 @@
 - increment version in `src/manifest.base.json` and `package.json`
 - build with `yarn build`
-- copy chrome extension to archive folder
-- commit
+- copy chrome extension to archive folder and name it with appropriate suffix version
+- commit chrome release
 - edit the README.md to reflect the new version (update commit id for reviewer)
 - commit
 - submit extension to mozilla

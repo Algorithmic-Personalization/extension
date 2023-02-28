@@ -31,36 +31,40 @@ const attemptToSaveWatchTime = (url: string) => {
 	}
 };
 
+let prevWatchTime: number;
+let prevCurrentTime: number;
+
+const videoListener = (event: Event) => {
+	const video: HTMLVideoElement = event.target as HTMLVideoElement;
+
+	const ct = video.currentTime;
+	const deltaT = ct - prevCurrentTime;
+	prevCurrentTime = ct;
+
+	if (deltaT > 0 && deltaT < 1) {
+		watchTime += deltaT;
+
+		// Only log every 5 seconds to avoid spamming the console
+		if (watchTime - prevWatchTime > 5) {
+			console.log('WATCH TIME', watchTime);
+			prevWatchTime = watchTime;
+		}
+	}
+};
+
 const watchVideoEvents = () => {
 	const videoElement = document.querySelector('.html5-video-container video');
-
-	if (!videoElement) {
-		return;
-	}
 
 	const video = videoElement as HTMLVideoElement;
 
 	watchTime = 0;
-	let prevWatchTime = 0;
-	let prevCurrentTime = 0;
+	prevWatchTime = 0;
+	prevCurrentTime = 0;
 
 	console.log('WATCHING VIDEO TIME UPDATE EVENTS');
 
-	video.addEventListener('timeupdate', () => {
-		const ct = video.currentTime;
-		const deltaT = ct - prevCurrentTime;
-		prevCurrentTime = ct;
-
-		if (deltaT > 0 && deltaT < 1) {
-			watchTime += deltaT;
-
-			// Only log every 5 seconds to avoid spamming the console
-			if (watchTime - prevWatchTime > 5) {
-				console.log('WATCH TIME', watchTime);
-				prevWatchTime = watchTime;
-			}
-		}
-	});
+	video.removeEventListener('timeupdate', videoListener);
+	video.addEventListener('timeupdate', videoListener);
 };
 
 window.addEventListener('unload', () => {

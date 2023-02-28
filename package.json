@@ -1,6 +1,6 @@
 {
   "name": "ytdpnl",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Better YouTube recommendations!",
   "main": "index.js",
   "repository": "https://github.com/djfm/ytdpnl",
