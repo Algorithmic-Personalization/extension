@@ -10,9 +10,13 @@ const mode = process.env.NODE_ENV || 'development';
 const hostPermissions = [
 	'*://*.youtube.com/*',
 	'*://*.youtu.be/*',
-	'*://ytdpnl-dev.fmdj.fr/*',
-	'*://ytdpnl.fmdj.fr/*',
 ];
+
+if (mode === 'development') {
+	hostPermissions.push('*://ytdpnl-dev.fmdj.fr/*');
+} else {
+	hostPermissions.push('*://ytdpnl.fmdj.fr/*');
+}
 
 module.exports = {
 	mode,

@@ -16,7 +16,6 @@
 	"host_permissions": [
 		"*://*.youtube.com/*",
 		"*://*.youtu.be/*",
-		"*://ytdpnl-dev.fmdj.fr/*",
 		"*://ytdpnl.fmdj.fr/*"
 	]
 }

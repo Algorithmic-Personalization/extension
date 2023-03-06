@@ -16,7 +16,6 @@
 	"permissions": [
 		"*://*.youtube.com/*",
 		"*://*.youtu.be/*",
-		"*://ytdpnl-dev.fmdj.fr/*",
 		"*://ytdpnl.fmdj.fr/*"
 	],
 	"browser_specific_settings": {
