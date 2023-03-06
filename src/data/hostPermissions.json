@@ -1,0 +1,12 @@
+{
+    "always": [
+        "*://*.youtube.com/*",
+        "*://*.youtu.be/*"
+    ],
+    "developmentSpecific": [
+        "*://ytdpnl-dev.fmdj.fr/*"
+    ],
+    "productionSpecific": [
+        "*://ytdpnl.fmdj.fr/*"
+    ]
+}

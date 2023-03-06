@@ -20,11 +20,14 @@
 		"sourceMap": true,
 		"module": "esnext",
 		"moduleResolution": "node",
-		"resolveJsonModule": true
+		"resolveJsonModule": true,
 	},
 	"include": ["."],
 	"exclude": ["node_modules", "dist"],
 	"ts-node": {
 		"files": true,
+		"compilerOptions": {
+			"module": "commonjs"
+		}
 	}
 }

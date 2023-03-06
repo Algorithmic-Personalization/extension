@@ -21,7 +21,7 @@ import {type UpdateManifest, log} from './lib';
 import {useApi} from './apiProvider';
 
 import packageJson from '../package.json';
-import updateManifest from './geckoUpdateUrl.json';
+import updateManifest from './data/geckoUpdateUrl.json';
 
 const loadLocalConfig = (): ParticipantConfig | undefined => {
 	const item = sessionStorage.getItem('cfg');
