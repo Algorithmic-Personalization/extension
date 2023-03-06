@@ -4,6 +4,7 @@ const FileManagerPlugin = require('filemanager-webpack-plugin');
 const {EnvironmentPlugin} = require('webpack');
 
 const fireFoxManifest = require('./src/geckoUpdateUrl');
+const chromeAdditionalManifestKeys = require('./src/chrome.additional.json');
 
 const mode = process.env.NODE_ENV || 'development';
 
@@ -75,6 +76,7 @@ module.exports = {
 						manifest.manifest_version = 3;
 						// eslint-disable-next-line camelcase
 						manifest.host_permissions = hostPermissions;
+						Object.assign(manifest, chromeAdditionalManifestKeys);
 						return JSON.stringify(manifest, null, '\t');
 					},
 				},
