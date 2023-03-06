@@ -1,4 +1,10 @@
 #!/bin/env bash
+
+if [ ! -f /home/djfm/.ssh/ytdpnl ]; then
+    echo "Private key not found, not generating crx file!"
+    exit 0
+fi
+
 echo "Generating crx file for extension..."
 if google-chrome \
     --pack-extension=/home/djfm/projects/ytdpnl-extension/dist/chrome \

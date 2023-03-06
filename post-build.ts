@@ -1,4 +1,4 @@
-import {copyFile} from 'fs/promises';
+import {copyFile, stat} from 'fs/promises';
 
 import semver from 'semver';
 
@@ -59,18 +59,40 @@ const getZipDestination = () => {
 	return `${prefix}-${version}.zip`;
 };
 
+const isFile = async (name: string): Promise<boolean> => {
+	try {
+		const stats = await stat(name);
+		return stats.isFile();
+	} catch (error) {
+		return false;
+	}
+};
+
 const main = async () => {
 	console.log('Copying chrome crx and zip to their location in archive...');
 	const crxSource = 'dist/chrome.crx';
 	const crxDestination = `dist/archive/chrome/${getCrxDestination()}`;
 	const zipSource = 'dist/chrome.zip';
 	const zipDestination = `dist/archive/chrome/${getZipDestination()}`;
-	await Promise.all([
-		copyFile(crxSource, crxDestination),
-		copyFile(zipSource, zipDestination),
-	]);
-	console.log(`Copied "${crxSource}" to "${crxDestination}".`);
-	console.log(`Copied "${zipSource}" to "${zipDestination}".`);
+
+	const promises = [
+		copyFile(zipSource, zipDestination).then(
+			() => {
+				console.log(`Copied ${zipSource} to ${zipDestination}`);
+			},
+		),
+	];
+
+	if (await isFile(crxSource)) {
+		promises.push(copyFile(crxSource, crxDestination).then(
+			() => {
+				console.log(`Copied ${crxSource} to ${crxDestination}`);
+			},
+		));
+	}
+
+	await Promise.all(promises);
+
 	console.log('Submit the extension to mozilla and finish the process as described in the HOW_TO_RELEASE.md file.');
 };
 
