@@ -1,0 +1,14 @@
+#!/bin/env bash
+echo "Generating crx file for extension..."
+if google-chrome \
+    --pack-extension=/home/djfm/projects/ytdpnl-extension/dist/chrome \
+    --pack-extension-key=/home/djfm/.ssh/ytdpnl \
+; then
+    echo "Extension packed!"
+    if [ -f dist/chrome.zip ]; then
+        echo "Removing useless chrome.zip file."
+        rm dist/chrome.zip
+    fi
+else
+    echo "Error packing extension :("
+fi
