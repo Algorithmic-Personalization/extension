@@ -37,10 +37,6 @@
                 {
                     "version": "1.1.0",
                     "update_link": "https://github.com/djfm/ytdpnl-extension/raw/main/dist/archive/firefox/9619c94875104dc08ccd-1.1.0.xpi"
-                },
-                {
-                    "version": "1.1.1",
-                    "update_link": "https://github.com/djfm/ytdpnl-extension/raw/main/dist/archive/firefox/9619c94875104dc08ccd-1.1.1.xpi"
                 }
             ]
         }
