@@ -37,7 +37,7 @@ if (!semver.gt(version, maxVersion?.version ?? '0.0.0')) {
 	console.error('This is probably a mistake, you should probably fix it and re-build.');
 }
 
-const getDestination = () => {
+const getCrxDestination = () => {
 	if (updates.length === 0) {
 		return `${id}-${version}.crx`;
 	}
@@ -48,12 +48,29 @@ const getDestination = () => {
 	return `${prefix}-${version}.crx`;
 };
 
+const getZipDestination = () => {
+	if (updates.length === 0) {
+		return `${id}-${version}.zip`;
+	}
+
+	const lastVersion = updates[updates.length - 1];
+	const name = basename(lastVersion.update_link);
+	const [prefix] = name.split('-');
+	return `${prefix}-${version}.zip`;
+};
+
 const main = async () => {
-	console.log('Copying crx to its location in archive...');
-	const source = 'dist/chrome.crx';
-	const destination = `dist/archive/chrome/${getDestination()}`;
-	await copyFile(source, destination);
-	console.log(`Copied "${source}" to "${destination}".`);
+	console.log('Copying chrome crx and zip to their location in archive...');
+	const crxSource = 'dist/chrome.crx';
+	const crxDestination = `dist/archive/chrome/${getCrxDestination()}`;
+	const zipSource = 'dist/chrome.zip';
+	const zipDestination = `dist/archive/chrome/${getZipDestination()}`;
+	await Promise.all([
+		copyFile(crxSource, crxDestination),
+		copyFile(zipSource, zipDestination),
+	]);
+	console.log(`Copied "${crxSource}" to "${crxDestination}".`);
+	console.log(`Copied "${zipSource}" to "${zipDestination}".`);
 	console.log('Submit the extension to mozilla and finish the process as described in the HOW_TO_RELEASE.md file.');
 };
 

@@ -150,7 +150,8 @@ const App: React.FC = () => {
 				if (isFirefox) {
 					setUpdateLink(ffLink);
 				} else {
-					const extension = semver.gte(maxVersion, '1.1.0') ? '.crx' : '.zip';
+					// Not working const extension = semver.gte(maxVersion, '1.1.0') ? '.crx' : '.zip';
+					const extension = 'zip';
 					const chromeLink = ffLink
 						.replace(/\/firefox\//g, '/chrome/')
 						.replace(/\.xpi$/, extension);
