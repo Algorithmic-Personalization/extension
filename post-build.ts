@@ -1,5 +1,7 @@
 import {copyFile} from 'fs/promises';
 
+import semver from 'semver';
+
 import {type VersionDescriptor} from './src/lib';
 
 import {version} from './package.json';
@@ -17,7 +19,23 @@ if (version !== manifestVersion) {
 const {addons} = updateManifest;
 const {updates} = (addons as any)[id] as {updates: VersionDescriptor[]};
 
-console.log('Update manifest is at the moment:', updates);
+let maxVersion: VersionDescriptor | undefined;
+
+for (const update of updates) {
+	if (!maxVersion || semver.gt(update.version, maxVersion.version)) {
+		maxVersion = update;
+	}
+}
+
+console.log(
+	'The latest version currently published is:',
+	maxVersion?.version ?? 'none',
+);
+
+if (!semver.gt(version, maxVersion?.version ?? '0.0.0')) {
+	console.log('/!\\ The version in package.json is not greater than the latest version published.');
+	console.error('This is probably a mistake, you should probably fix it and re-build.');
+}
 
 const getDestination = () => {
 	if (updates.length === 0) {
