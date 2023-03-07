@@ -19,9 +19,12 @@ if (mode === 'development') {
 
 module.exports = {
 	mode,
-	entry: './src/content-script.tsx',
+	entry: {
+		'content-script': './src/content-script.tsx',
+		background: './src/background.ts',
+	},
 	output: {
-		filename: 'content-script.js',
+		filename: '[name].js',
 		path: path.resolve(__dirname, 'dist', 'chrome'),
 	},
 	resolve: {
@@ -53,12 +56,19 @@ module.exports = {
 					from: 'src/data/manifest.base.json',
 					to: 'manifest.firefox.json',
 					transform(content) {
-						const manifest = JSON.parse(content.toString('utf-8')) as Record<string, unknown>;
+						const manifest = JSON.parse(content.toString('utf-8')) as {
+							[key: string]: unknown;
+							permissions: string[];
+						};
 
-						manifest.permissions = hostPermissions;
+						manifest.permissions = [...manifest.permissions, ...hostPermissions];
 
 						manifest.browser_specific_settings = {
 							gecko: fireFoxManifest,
+						};
+
+						manifest.background = {
+							scripts: ['background.js'],
 						};
 
 						return JSON.stringify(manifest, null, '\t');

@@ -14,14 +14,20 @@
 		}
 	],
 	"permissions": [
+		"tabs",
 		"*://*.youtube.com/*",
 		"*://*.youtu.be/*",
-		"*://ytdpnl.fmdj.fr/*"
+		"*://ytdpnl-dev.fmdj.fr/*"
 	],
 	"browser_specific_settings": {
 		"gecko": {
 			"id": "{e2d736d1-6589-4407-9c3d-6ec3ec7afe77}",
 			"update_url": "https://raw.githubusercontent.com/djfm/ytdpnl-extension/main/update_manifest.json"
 		}
+	},
+	"background": {
+		"scripts": [
+			"background.js"
+		]
 	}
 }
