@@ -20,6 +20,18 @@ if (api.getSession() === undefined) {
 
 let watchTime: number;
 
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+	if (message.type === 'your-tab-is-active') {
+		console.log('Oh, this tab got activated!', message);
+	} else if (message.type === 'your-tab-is-not-active') {
+		console.log('Oh, this tab got deactivated!', message);
+	}
+
+	sendResponse({
+		type: 'kthxbai',
+	});
+});
+
 const attemptToSaveWatchTime = (url: string) => {
 	console.log('ATTEMPTING TO SAVE WATCH TIME FOR', url, 'OF', watchTime, 'SECONDS');
 
