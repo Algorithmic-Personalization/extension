@@ -16,3 +16,15 @@ const getCurrentTab = async (callback: TabCallback) => {
 getCurrentTab(tab => {
 	console.log(tab);
 }).catch(console.error);
+
+chrome.tabs.onActivated.addListener(tab => {
+	console.log('Active tab:', tab);
+});
+
+const main = async () => {
+	chrome.tabs.query({}, ([...tabs]) => {
+		console.log('Tabs found:', tabs);
+	});
+};
+
+main().catch(console.error);
