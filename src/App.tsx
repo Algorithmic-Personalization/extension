@@ -33,6 +33,7 @@ const loadLocalConfig = (): ParticipantConfig | undefined => {
 };
 
 const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
+const isChrome = !isFirefox;
 
 const UpdateLinkC: React.FC<{link: string | undefined}> = ({link}) => {
 	if (!link) {
@@ -59,6 +60,13 @@ const UpdateLinkC: React.FC<{link: string | undefined}> = ({link}) => {
 					Download Update
 				</Button>
 			</a>
+			{isChrome && (
+				<Typography color='text.primary' sx={{mb: 2}}>
+					Once the extension&apos;s zip file is downloaded, you can install it by
+					opening the page <strong>chrome://extensions</strong> in your browser (copy this URL into your URL bar),
+					and dragging the zip file onto that page.
+				</Typography>
+			)}
 		</>
 	);
 };
@@ -151,7 +159,7 @@ const App: React.FC = () => {
 					setUpdateLink(ffLink);
 				} else {
 					// Not working const extension = semver.gte(maxVersion, '1.1.0') ? '.crx' : '.zip';
-					const extension = 'zip';
+					const extension = '.zip';
 					const chromeLink = ffLink
 						.replace(/\/firefox\//g, '/chrome/')
 						.replace(/\.xpi$/, extension);
