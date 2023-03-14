@@ -16,6 +16,7 @@ import {
 
 export type Api = {
 	sendPageView: () => void;
+	setTabActive: (active: boolean | undefined) => void;
 	createSession: () => Promise<Maybe<Session>>;
 	checkParticipantCode: (participantCode: string) => Promise<boolean>;
 	setAuth: (participantCode: string) => void;
@@ -41,6 +42,7 @@ type StoredEvent = {
 
 const retryDelay = 60000;
 const eventsStorageKey = 'events';
+let tabIsActive: boolean | undefined;
 
 const loadStoredEvents = () => {
 	const dataStr = localStorage.getItem(eventsStorageKey);
@@ -252,6 +254,7 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 			const event = {...inputEvent};
 
 			event.extensionVersion = packageJson.version;
+			event.tabActive = tabIsActive;
 
 			if (event.sessionUuid === '') {
 				await this.ensureSession();
@@ -294,6 +297,10 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 			event.context = document.referrer;
 
 			api.postEvent(event, true).catch(console.error);
+		},
+
+		setTabActive(active: boolean | undefined) {
+			tabIsActive = active;
 		},
 	};
 

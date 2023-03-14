@@ -23,8 +23,10 @@ let watchTime: number;
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 	if (message.type === 'your-tab-is-active') {
 		console.log('Oh, this tab got activated!', message);
+		api.setTabActive(true);
 	} else if (message.type === 'your-tab-is-not-active') {
 		console.log('Oh, this tab got deactivated!', message);
+		api.setTabActive(false);
 	}
 
 	sendResponse({
