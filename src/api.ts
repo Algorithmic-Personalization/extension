@@ -103,8 +103,8 @@ const retryToPostStoredEvents = async () => {
 	const storedEvents = loadStoredEvents();
 
 	for (const storedEvent of storedEvents) {
-		const lastAttempt = Number(new Date(storedEvent.lastAttempt));
-		const remaining = lastAttempt + retryDelay - Date.now();
+		const latestAttempt = Number(new Date(storedEvent.lastAttempt));
+		const remaining = latestAttempt + retryDelay - Date.now();
 		if (remaining > 0 && !storedEvent.tryImmediately) {
 			continue;
 		}
