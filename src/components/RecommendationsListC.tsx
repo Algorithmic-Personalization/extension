@@ -85,7 +85,7 @@ export const RecommendationsListC: React.FC<{
 			setNonPersonalizedLoading(false);
 			log('setting non-personalized recommendations', {defaultRecommendations: hashRecommendationsList(recommendations)});
 		}).catch(err => {
-			console.error('Error fetching non personalized recommendations', err);
+			console.log('Error fetching non personalized recommendations:', err);
 		});
 
 		fetchDefault(url).then(recommendations => {
@@ -93,7 +93,7 @@ export const RecommendationsListC: React.FC<{
 			setDefaultLoading(false);
 			log('setting default recommendations', {defaultRecommendations: hashRecommendationsList(recommendations)});
 		}).catch(err => {
-			console.error('Error fetching default recommendations', err);
+			console.log('Error fetching default recommendations:', err);
 		});
 	}, [url]);
 
@@ -124,7 +124,9 @@ export const RecommendationsListC: React.FC<{
 		event.url = url;
 		event.context = window.location.href;
 
-		postEvent(event).catch(console.error);
+		postEvent(event).catch(e => {
+			console.error('Error posting recommendations shown event, will be retried later on:', e);
+		});
 
 		console.log('LOADED!', url);
 	}, [loaded, nonPersonalizedRecommendations, defaultRecommendations]);
@@ -148,7 +150,7 @@ export const RecommendationsListC: React.FC<{
 		try {
 			await postEvent(event);
 		} catch (err) {
-			console.error('Error posting event', err);
+			console.log('Error posting sidebar clicked event, will be retried later on:', err);
 		}
 	};
 

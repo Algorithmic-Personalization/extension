@@ -133,7 +133,9 @@ const App: React.FC = () => {
 			enrichedEvent.experimentConfigId = cfg.experimentConfigId;
 		}
 
-		api.postEvent(enrichedEvent, true).catch(console.error);
+		api.postEvent(enrichedEvent, true).catch(e => {
+			console.log('Error posting event ', enrichedEvent.localUuid, 'will be retried later on:', e);
+		});
 	};
 
 	useEffect(() => {
@@ -166,7 +168,9 @@ const App: React.FC = () => {
 					setUpdateLink(chromeLink);
 				}
 			}
-		}).catch(console.error);
+		}).catch(e => {
+			console.log('Error: Could not fetch list of available updates.', e);
+		});
 
 		updateUrl();
 		updateLoggedIn();
@@ -196,9 +200,11 @@ const App: React.FC = () => {
 				setCfg(c.value);
 				sessionStorage.setItem('cfg', JSON.stringify(c.value));
 			} else {
-				console.error('Could not get config:', c.message);
+				console.log('Could not get config:', c.message);
 			}
-		}).catch(console.error);
+		}).catch(e => {
+			console.log('Error getting config:', e);
+		});
 	}, [currentUrl, participantCode, participantCodeValid]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -221,7 +227,9 @@ const App: React.FC = () => {
 		setParticipantCodeValid(true);
 		localStorage.setItem('participantCodeValid', 'true');
 		api.setAuth(participantCode);
-		api.newSession().catch(console.error);
+		api.newSession().catch(e => {
+			console.log('Error creating new session:', e);
+		});
 	};
 
 	if (!loggedIn) {

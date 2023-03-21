@@ -15,7 +15,9 @@ let root: HTMLElement | undefined;
 let previousUrl: string | undefined;
 
 if (api.getSession() === undefined) {
-	api.newSession().catch(console.error);
+	api.newSession().catch(e => {
+		console.log('Failed to create new session at page load:', e);
+	});
 }
 
 let watchTime: number;

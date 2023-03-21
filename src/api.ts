@@ -188,7 +188,10 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 
 			p.then(() => {
 				sessionPromise = undefined;
-			}).catch(console.error);
+			}).catch(e => {
+				console.log('Failed to create session:', e);
+				sessionPromise = undefined;
+			});
 
 			return p;
 		},
@@ -210,7 +213,7 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 
 		async newSession() {
 			if (!participantCode) {
-				console.error('Missing participant code');
+				console.log('Missing participant code!');
 				return false;
 			}
 
@@ -226,7 +229,7 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 				return true;
 			}
 
-			console.error('Failed to create session:', res.message);
+			console.log('Failed to create new session:', res.message);
 
 			return false;
 		},
@@ -298,7 +301,9 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 			event.url = window.location.href;
 			event.context = document.referrer;
 
-			api.postEvent(event, true).catch(console.error);
+			api.postEvent(event, true).catch(e => {
+				console.log('Failed to send page view event', event.localUuid, 'will be retried later on:', e);
+			});
 		},
 
 		setTabActive(active: boolean | undefined) {
