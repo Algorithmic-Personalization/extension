@@ -100,12 +100,16 @@ const saveStoredEvents = (events: StoredEvent[]) => {
 };
 
 const retryToPostStoredEvents = async () => {
+	console.log('Retrying to post stored events...');
 	const storedEvents = loadStoredEvents();
+
+	console.log('Found', storedEvents.length, 'event(s) to retry...');
 
 	for (const storedEvent of storedEvents) {
 		const latestAttempt = Number(new Date(storedEvent.lastAttempt));
 		const timeUntilNextAttempt = latestAttempt + retryDelay - Date.now();
 		if (timeUntilNextAttempt > 0 && !storedEvent.tryImmediately) {
+			console.log('Waiting', timeUntilNextAttempt, 'ms before retrying to post event', storedEvent.event.localUuid);
 			continue;
 		}
 
@@ -137,8 +141,6 @@ const clearStoredEvent = (event: Event) => {
 	const newEvents = events.filter(e => e.event.localUuid !== event.localUuid);
 	saveStoredEvents(newEvents);
 };
-
-setInterval(retryToPostStoredEvents, retryDelay);
 
 export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api => {
 	let participantCode = localStorage.getItem('participantCode') ?? overrideParticipantCode ?? '';
@@ -306,3 +308,8 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 
 	return api;
 };
+
+setInterval(retryToPostStoredEvents, retryDelay);
+retryToPostStoredEvents().catch(e => {
+	console.error('Failed to retry to post stored events', e);
+});
