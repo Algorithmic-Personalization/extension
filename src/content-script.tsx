@@ -35,7 +35,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 });
 
 const attemptToSaveWatchTime = (url: string) => {
-	console.log('ATTEMPTING TO SAVE WATCH TIME FOR', url, 'OF', watchTime, 'SECONDS');
+	console.log('Attempting to save watch time for', url, 'of', watchTime, 'seconds');
 
 	if (watchTime && watchTime > 0) {
 		const event = new WatchTimeEvent(watchTime);
