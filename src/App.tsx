@@ -188,7 +188,7 @@ const App: React.FC = () => {
 		return () => {
 			observer.disconnect();
 		};
-	}, [currentUrl, loggedIn, updateLink]);
+	});
 
 	useEffect(() => {
 		if (participantCode === '') {
