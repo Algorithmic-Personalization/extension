@@ -12,5 +12,5 @@
     - without `.git`
 - once extension is validated by mozilla
   - add the `.xpi` to the archive folder
-  - update `update_manifest.json` with the new version
+  - update `update_manifest.json` with the new version, in extension repo and on the API server public directory
   - commit
