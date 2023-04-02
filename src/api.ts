@@ -270,6 +270,10 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 				storeEvent(event);
 			}
 
+			if (!event.url) {
+				event.url = window.location.href;
+			}
+
 			const res = await post<boolean>(postEvent, event, headers());
 
 			if (res.kind === 'Success') {
