@@ -201,12 +201,12 @@ const App: React.FC = () => {
 				setCfg(c.value);
 				sessionStorage.setItem('cfg', JSON.stringify(c.value));
 			} else {
-				console.log('Could not get config:', c.message);
+				console.error('Could not get config:', c.message);
 			}
 		}).catch(e => {
 			console.log('Error getting config:', e);
 		});
-	}, [currentUrl, participantCode, participantCodeValid]);
+	}, [currentUrl, participantCode]);
 
 	useEffect(() => {
 		if (extensionInstalledSent) {
@@ -260,6 +260,35 @@ const App: React.FC = () => {
 		});
 	};
 
+	const codeForm = (text = (<>
+			Welcome to the experiment!<br />
+			Please enter your participant code to continue.
+	</>)) => (<form onSubmit={handleSubmit}>
+		<Box sx={{
+			display: 'flex',
+			flexDirection: 'column',
+			alignItems: 'stretch',
+		}}>
+			<Typography sx={{mb: 2}} color='text.primary'>
+				{text}
+			</Typography>
+			<TextField
+				label='Participant Code'
+				value={participantCode}
+				onChange={e => {
+					setParticipantCode(e.target.value);
+				}}
+			/>
+			<FormHelperText sx={{mb: 2}}>
+				This is the code that has been give to you by e-mail.
+			</FormHelperText>
+			<Button type='submit' variant='contained'>
+				Submit
+			</Button>
+			<MessageC message={error} type='error' />
+		</Box>
+	</form>);
+
 	if (!loggedIn) {
 		return (
 			<Typography color='text.primary'>
@@ -268,40 +297,23 @@ const App: React.FC = () => {
 		);
 	}
 
-	if (!participantCodeValid) {
-		return (
-			<form onSubmit={handleSubmit}>
-				<Box sx={{
-					display: 'flex',
-					flexDirection: 'column',
-					alignItems: 'stretch',
-				}}>
-					<Typography sx={{mb: 2}} color='text.primary'>
-						Welcome to the experiment!<br />
-						Please enter your participant code to continue.
-					</Typography>
-					<TextField
-						label='Participant Code'
-						value={participantCode}
-						onChange={e => {
-							setParticipantCode(e.target.value);
-						}}
-					/>
-					<FormHelperText sx={{mb: 2}}>
-						This is the code that has been give to you by e-mail.
-					</FormHelperText>
-					<Button type='submit' variant='contained'>
-						Submit
-					</Button>
-					<MessageC message={error} type='error' />
-				</Box>
-			</form>
-		);
+	if (!participantCode) {
+		return codeForm();
+	}
+
+	if (participantCode && !participantCodeValid) {
+		return codeForm(<>
+			Your participant code seems invalid,
+			<br />please try again or refresh the page.
+		</>);
 	}
 
 	if (!cfg) {
 		return (
-			<Typography color='text.primary'>Loading config...</Typography>
+			<Typography color='text.primary'>
+				Loading configuration...<br />
+				Please refresh the page if this seems to be taking too long.
+			</Typography>
 		);
 	}
 
