@@ -1,7 +1,7 @@
 {
   "name": "ytdpnl",
-  "version": "1.1.5",
-  "description": "Better YouTube recommendations!",
+  "version": "1.2.0",
+  "description": "Algorithmic Personalization Project",
   "main": "index.js",
   "repository": "https://github.com/djfm/ytdpnl",
   "author": "François-Marie de Jouvencel <fm.de.jouvencel@gmail.com>",

@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 
 import {type ParticipantConfig} from './common/models/experimentConfig';
-import Event, {EventType} from './common/models/event';
+import Event from './common/models/event';
 
 import MessageC from './components/MessageC';
 
@@ -94,7 +94,6 @@ const App: React.FC = () => {
 	const [cfg, setCfg] = useState(loadLocalConfig());
 	const [loggedIn, setLoggedIn] = useState<boolean>(sessionStorage.getItem('loggedIn') === 'true');
 	const [updateLink, setUpdateLink] = useState<string | undefined>();
-	const [extensionInstalledSent, setExtensionInstalledSent] = useState<boolean>(localStorage.getItem('extensionInstalledSent') === 'true');
 
 	const api = useApi();
 
@@ -207,33 +206,6 @@ const App: React.FC = () => {
 			console.log('Error getting config:', e);
 		});
 	}, [currentUrl, participantCode]);
-
-	useEffect(() => {
-		if (extensionInstalledSent) {
-			console.log('extension is installed');
-			return;
-		}
-
-		console.log('checking participant code...');
-
-		if (participantCodeValid) {
-			console.log('Participant code is valid:', participantCode);
-
-			const installedEvent = new Event();
-			installedEvent.type = EventType.EXTENSION_INSTALLED;
-			installedEvent.context = window.location.href;
-
-			api.postEvent(installedEvent, false).then(ok => {
-				if (ok) {
-					localStorage.setItem('extensionInstalledSent', 'true');
-					setExtensionInstalledSent(true);
-					console.log('Successfully posted EXTENSION_INSTALLED event');
-				}
-			}).catch(e => {
-				console.error('Error posting EXTENSION_INSTALLED event:', e);
-			});
-		}
-	}, [participantCodeValid, currentUrl]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
