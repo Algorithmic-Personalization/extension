@@ -6,3 +6,4 @@
 !.yarn/sdks
 !.yarn/versions
 stats.json
+config.extension.ts

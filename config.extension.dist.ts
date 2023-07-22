@@ -1,4 +1,4 @@
 export default {
-	'production-server-url': 'https://ytdpnl.fmdj.fr',
-	'development-server-url': 'https://ytdpnl-dev.fmdj.fr',
+	'production-server-url': 'https://prod-example.com',
+	'development-server-url': 'https://dev-example.com',
 };
