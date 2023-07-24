@@ -191,7 +191,7 @@ const App: React.FC = () => {
 	});
 
 	useEffect(() => {
-		if (participantCode === '') {
+		if (participantCode === '' || !participantCodeValid) {
 			return;
 		}
 
@@ -205,7 +205,7 @@ const App: React.FC = () => {
 		}).catch(e => {
 			console.log('Error getting config:', e);
 		});
-	}, [currentUrl, participantCode]);
+	}, [currentUrl, participantCode, participantCodeValid]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
