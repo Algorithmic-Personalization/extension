@@ -1,5 +1,5 @@
 {
-	"name": "ytdpnl",
+	"name": "YouTube Experiment",
 	"version": "1.2.0",
 	"manifest_version": 3,
 	"content_scripts": [
@@ -21,7 +21,6 @@
 		"*://*.youtu.be/*",
 		"*://ytdpnl.fmdj.fr/*"
 	],
-	"key": "AAAAB3NzaC1yc2EAAAADAQABAAABgQCOKTQjMgNPOHCJF4kUzIkLTTyHdPDNHXjAXn6w3rKVOS5ndxHkMZNRETQiv4XdfqP4jY8HCnWogod5BwBHI0nL3Nb5FGwjCm0njoUqg/2B7oxEfnmCV8kMiJHY9oEtAHrnJQvedwFaeAQXk0o7MZDYGjJLzQ+YOQjXBnBs6mayfCIq71R4HoSEeUiNBeKUj19r+UlkLbUTmY83SCSrx27FWdEswYOmr29FokW4o50tTzj/eLkmJeMXyOwiknHfSjLedNT3UDqNr1f/bnm9dZksSXyVylM2ief8hsezfZAwQM7eXfnWdruv5jFxe1BwFs58CbQlUBuSsd1FhQnKXz+y1QtiywclgG8osW3b6DGACsJ5lSrxg01tdtTg+QlxnsJo+SPhOJdfac1l1FtxJOcyPCqJiv/OfLjfRl5MOs4UArxxVr3dREuY0z3YTU1jDcObI5z/BimuoXfg1ggl5igkzIDJZGEPLHmov8UtkVqfl2l4FGATY7v7e5i0xzWreU8=",
 	"background": {
 		"service_worker": "background.js"
 	}
