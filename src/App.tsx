@@ -1,4 +1,3 @@
-import semver from 'semver';
 import React, {useEffect, useState} from 'react';
 
 import {
@@ -16,12 +15,11 @@ import Event from './common/models/event';
 import MessageC from './components/MessageC';
 
 import RecommendationsListC from './components/RecommendationsListC';
-import {type UpdateManifest, log} from './lib';
+import {log} from './lib';
 
 import {useApi} from './apiProvider';
 
 import packageJson from '../package.json';
-import updateManifest from './data/geckoUpdateUrl.json';
 
 const loadLocalConfig = (): ParticipantConfig | undefined => {
 	const item = sessionStorage.getItem('cfg');
@@ -30,45 +28,6 @@ const loadLocalConfig = (): ParticipantConfig | undefined => {
 	}
 
 	return undefined;
-};
-
-const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
-const isChrome = !isFirefox;
-
-const UpdateLinkC: React.FC<{link: string | undefined}> = ({link}) => {
-	if (!link) {
-		return null;
-	}
-
-	return (
-		<>
-			<Typography color='text.primary'>
-				There is a new version of the extension for the experiment available,
-				please download it and install it manually. The source-code of the extension
-				is available on <Link href='https://github.com/djfm/ytdpnl-extension' target='_blank' rel='noreferrer'>GitHub</Link>,
-				you can build it by yourself if you want to ensure the code&apos;s integrity.
-			</Typography>
-			<a href={link} style={{textDecoration: 'none'}}>
-				<Button
-					variant='contained'
-					color='primary'
-					sx={{
-						mt: 1,
-						mb: 2,
-					}}
-				>
-					Download Update
-				</Button>
-			</a>
-			{isChrome && (
-				<Typography color='text.primary' sx={{mb: 2}}>
-					Once the extension&apos;s zip file is downloaded, you can install it by
-					opening the page <strong>chrome://extensions</strong> in your browser (copy this URL into your URL bar),
-					and dragging the zip file onto that page.
-				</Typography>
-			)}
-		</>
-	);
 };
 
 const debounceMs = (ms: number) => (fn: () => void) => {
@@ -93,7 +52,6 @@ const App: React.FC = () => {
 	const [error, setError] = useState<string | undefined>();
 	const [cfg, setCfg] = useState(loadLocalConfig());
 	const [loggedIn, setLoggedIn] = useState<boolean>(sessionStorage.getItem('loggedIn') === 'true');
-	const [updateLink, setUpdateLink] = useState<string | undefined>();
 
 	const api = useApi();
 
@@ -141,36 +99,6 @@ const App: React.FC = () => {
 	useEffect(() => {
 		console.log('YouTube Recommendations Experiment v', packageJson.version);
 		console.log('Fetching list of available updates...');
-
-		fetch(updateManifest.update_url).then(async r => r.json()).then((data: UpdateManifest) => {
-			console.log('Available updates:', data);
-			const {updates} = data.addons[updateManifest.id];
-
-			let maxVersion = packageJson.version;
-			let ffLink: string | undefined;
-
-			for (const update of updates) {
-				if (semver.gt(update.version, maxVersion)) {
-					maxVersion = update.version;
-					ffLink = update.update_link;
-				}
-			}
-
-			if (ffLink) {
-				if (isFirefox) {
-					setUpdateLink(ffLink);
-				} else {
-					// Not working const extension = semver.gte(maxVersion, '1.1.0') ? '.crx' : '.zip';
-					const extension = '.zip';
-					const chromeLink = ffLink
-						.replace(/\/firefox\//g, '/chrome/')
-						.replace(/\.xpi$/, extension);
-					setUpdateLink(chromeLink);
-				}
-			}
-		}).catch(e => {
-			console.log('Error: Could not fetch list of available updates.', e);
-		});
 
 		updateUrl();
 		updateLoggedIn();
@@ -290,7 +218,6 @@ const App: React.FC = () => {
 	}
 
 	return (<>
-		<UpdateLinkC link={updateLink} />
 		<RecommendationsListC url={currentUrl} cfg={cfg} postEvent={postEvent}/>
 		<Link onClick={handleLogout} sx={{
 			my: 2,

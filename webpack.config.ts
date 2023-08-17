@@ -3,7 +3,6 @@ import CopyPlugin from 'copy-webpack-plugin';
 import FileManagerPlugin from 'filemanager-webpack-plugin';
 import {EnvironmentPlugin} from 'webpack';
 
-import fireFoxManifest from './src/data/geckoUpdateUrl.json';
 import chromeAdditionalManifestKeys from './src/data/chrome.additional.json';
 import hostPermissionsDefinition from './src/data/hostPermissions.json';
 
@@ -62,10 +61,6 @@ module.exports = {
 						};
 
 						manifest.permissions = [...manifest.permissions, ...hostPermissions];
-
-						manifest.browser_specific_settings = {
-							gecko: fireFoxManifest,
-						};
 
 						manifest.background = {
 							scripts: ['background.js'],

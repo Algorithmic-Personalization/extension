@@ -10,7 +10,7 @@
   "packageManager": "yarn@3.3.0",
   "sideEffects": false,
   "scripts": {
-    "build": "NODE_ENV=production webpack && ./generate-crx && ts-node ./post-build.ts",
+    "build": "NODE_ENV=production webpack && ./generate-crx",
     "build:dev": "NODE_ENV=development webpack",
     "watch": "NODE_ENV=development webpack --watch",
     "watch:prod": "NODE_ENV=production webpack --watch",

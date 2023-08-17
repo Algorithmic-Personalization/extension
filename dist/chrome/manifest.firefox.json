@@ -19,12 +19,6 @@
 		"*://*.youtu.be/*",
 		"*://personalization-server.csail.mit.edu/*"
 	],
-	"browser_specific_settings": {
-		"gecko": {
-			"id": "{e2d736d1-6589-4407-9c3d-6ec3ec7afe77}",
-			"update_url": "https://ytdpnl.fmdj.fr/update_manifest.json"
-		}
-	},
 	"background": {
 		"scripts": [
 			"background.js"
