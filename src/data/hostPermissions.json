@@ -7,6 +7,6 @@
         "*://ytdpnl-dev.fmdj.fr/*"
     ],
     "productionSpecific": [
-        "*://ytdpnl.fmdj.fr/*"
+        "*://personalization-server.csail.mit.edu/*"
     ]
 }

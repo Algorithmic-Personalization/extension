@@ -1,6 +1,6 @@
 {
 	"name": "YouTube Experiment",
-	"version": "1.2.0",
+	"version": "1.3.0",
 	"manifest_version": 2,
 	"content_scripts": [
 		{
@@ -17,7 +17,7 @@
 		"tabs",
 		"*://*.youtube.com/*",
 		"*://*.youtu.be/*",
-		"*://ytdpnl.fmdj.fr/*"
+		"*://personalization-server.csail.mit.edu/*"
 	],
 	"browser_specific_settings": {
 		"gecko": {
