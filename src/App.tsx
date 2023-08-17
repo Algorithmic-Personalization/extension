@@ -208,17 +208,7 @@ const App: React.FC = () => {
 		</>);
 	}
 
-	if (!cfg) {
-		return (
-			<Typography color='text.primary'>
-				Loading configuration...<br />
-				Please refresh the page if this seems to be taking too long.
-			</Typography>
-		);
-	}
-
-	return (<>
-		<RecommendationsListC url={currentUrl} cfg={cfg} postEvent={postEvent}/>
+	const logout = (
 		<Link onClick={handleLogout} sx={{
 			my: 2,
 			display: 'block',
@@ -227,6 +217,23 @@ const App: React.FC = () => {
 		}}>
 			log out of experiment
 		</Link>
+	);
+
+	if (!cfg) {
+		return (
+			<>
+				<Typography color='text.primary'>
+					Loading configuration...<br />
+					Please refresh the page if this seems to be taking too long.
+				</Typography>
+				{logout}
+			</>
+		);
+	}
+
+	return (<>
+		<RecommendationsListC url={currentUrl} cfg={cfg} postEvent={postEvent}/>
+		{logout}
 	</>);
 };
 
