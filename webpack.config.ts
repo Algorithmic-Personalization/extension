@@ -97,6 +97,30 @@ module.exports = {
 		new FileManagerPlugin({
 			events: {
 				onEnd: {
+					copy: [
+						{
+							source: 'icons',
+							destination: 'dist/chrome',
+						},
+					],
+				},
+			},
+		}),
+		new FileManagerPlugin({
+			events: {
+				onEnd: {
+					copy: [
+						{
+							source: 'icons',
+							destination: 'dist/firefox',
+						},
+					],
+				},
+			},
+		}),
+		new FileManagerPlugin({
+			events: {
+				onEnd: {
 					delete: [
 						'dist/firefox/manifest.json',
 					],
