@@ -14,11 +14,11 @@ In the terminal:
 `git clone https://github.com/djfm/ytdpnl-extension.git --recursive`
 
 In order to be sure to get the version corresponding to the submitted extension,
-please checkout this commit for v1.4.0:
+please checkout this commit for v1.5.0:
 
 ```bash
 cd ytdpnl-extension
-git checkout ebdaeb70
+git checkout 4cc86298
 ```
 
 ## Install the dependencies
