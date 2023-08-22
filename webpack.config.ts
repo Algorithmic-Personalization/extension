@@ -60,7 +60,9 @@ module.exports = {
 							permissions: string[];
 						};
 
-						manifest.permissions = [...manifest.permissions, ...hostPermissions];
+						const extraPermissions = ['tabs'];
+
+						manifest.permissions = [...manifest.permissions, ...hostPermissions, ...extraPermissions];
 
 						manifest.background = {
 							scripts: ['background.js'],
