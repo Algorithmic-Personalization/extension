@@ -16,7 +16,7 @@
 	"permissions": [
 		"*://*.youtube.com/*",
 		"*://*.youtu.be/*",
-		"*://ytdpnl-dev.fmdj.fr/*",
+		"*://personalization-server.csail.mit.edu/*",
 		"tabs"
 	],
 	"icons": {
