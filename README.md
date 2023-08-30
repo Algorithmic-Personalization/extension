@@ -11,7 +11,7 @@ have the [yarn](https://yarnpkg.com/) package manager installed globally.
 
 In the terminal:
 
-`git clone https://github.com/djfm/ytdpnl-extension.git --recursive`
+`git clone https://github.com/Algorithmic-Personalization/ytdpnl-extension.git --recursive`
 
 In order to be sure to get the version corresponding to the submitted extension,
 please checkout this commit for v1.5.0:
