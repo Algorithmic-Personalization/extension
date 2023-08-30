@@ -1,4 +1,3 @@
 - increment version in `src/manifest.base.json` and `package.json`
 - build with `yarn build`
-- package with `yarn package`
 - submit to the stores, the source is ready in `dist/source.zip`
