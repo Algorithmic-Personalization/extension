@@ -23,7 +23,7 @@
 	"host_permissions": [
 		"*://*.youtube.com/*",
 		"*://*.youtu.be/*",
-		"*://personalization-server.csail.mit.edu/*"
+		"*://ytdpnl-dev.fmdj.fr/*"
 	],
 	"background": {
 		"service_worker": "background.js"
