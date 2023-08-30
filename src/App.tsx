@@ -221,13 +221,10 @@ const App: React.FC = () => {
 
 	if (!cfg) {
 		return (
-			<>
-				<Typography color='text.primary'>
-					Loading configuration...<br />
-					Please refresh the page if this seems to be taking too long.
-				</Typography>
-				{logout}
-			</>
+			<Typography color='text.primary'>
+				Loading configuration...<br />
+				Please refresh the page if this seems to be taking too long.
+			</Typography>
 		);
 	}
 
