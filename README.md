@@ -7,6 +7,8 @@ Any OS should do, but the following was tested under Ubuntu 22.10.
 You will need to have a recent (>= 16.18.1) version of [Node.js](https://nodejs.org/en/) and
 have the [yarn](https://yarnpkg.com/) package manager installed globally.
 
+### Building from GitHub
+
 ## Clone the repository recursively (with submodules)
 
 In the terminal:
@@ -34,3 +36,8 @@ yarn build
 ```
 
 The extension will be output in the `dist` folder.
+
+### Building from the source .zip
+
+If what was submitted to you for review was a zip package, the code is self-contained and the submitted archive zip is included for hash comparison.
+Build instructions are the same as above, just no need to clone the repository, just extract the zip.

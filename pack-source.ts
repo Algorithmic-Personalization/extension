@@ -109,7 +109,7 @@ const main = async () => {
 	const files = await readDirRecursively(tmpDir);
 
 	for (const file of files) {
-		const name = file.replace(tmpDir, '');
+		const name = join('personalization-experiment', file.replace(tmpDir, ''));
 		console.log('Adding', {file}, 'as', {name}, 'to archive...');
 
 		archive.file(file, {name});
