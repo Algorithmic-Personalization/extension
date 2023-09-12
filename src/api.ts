@@ -25,6 +25,7 @@ export type Api = {
 	ensureSession: () => Promise<void>;
 	getConfig: () => Promise<Maybe<ParticipantConfig>>;
 	postEvent: (event: Event, storeForRetry: boolean) => Promise<boolean>;
+	getHeaders: () => Record<string, string>;
 	logout(): void;
 };
 
@@ -117,6 +118,14 @@ const retryToPostStoredEvents = async () => {
 		storedEvent.tryImmediately = false;
 
 		const api = createApi(storedEvent.apiUrl, storedEvent.participantCode);
+
+		const {'X-Participant-Code': participantCode} = api.getHeaders();
+
+		if (!participantCode) {
+			console.log('Missing participant code!');
+			storedEvent.persisted = true;
+			continue;
+		}
 
 		// eslint-disable-next-line no-await-in-loop
 		const result = await api.postEvent(storedEvent.event, false);
@@ -256,6 +265,13 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 		},
 
 		async postEvent(inputEvent: Event, storeForRetry: boolean) {
+			const h = headers();
+
+			if (!h['X-Participant-Code']) {
+				console.log('Missing participant code!');
+				return false;
+			}
+
 			const event = {...inputEvent};
 
 			event.extensionVersion = packageJson.version;
@@ -274,7 +290,7 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 				event.url = window.location.href;
 			}
 
-			const res = await post<boolean>(postEvent, event, headers());
+			const res = await post<boolean>(postEvent, event, h);
 
 			if (res.kind === 'Success') {
 				clearStoredEvent(event);
@@ -287,6 +303,10 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 			}
 
 			return false;
+		},
+
+		getHeaders() {
+			return headers();
 		},
 
 		logout() {
