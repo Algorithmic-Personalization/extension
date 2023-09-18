@@ -272,7 +272,10 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 				return false;
 			}
 
-			const event = {...inputEvent};
+			const event = {
+				...inputEvent,
+				context: document.referrer,
+			};
 
 			event.extensionVersion = packageJson.version;
 			event.tabActive = tabIsActive;
@@ -323,7 +326,6 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 
 			event.type = EventType.PAGE_VIEW;
 			event.url = window.location.href;
-			event.context = document.referrer;
 
 			api.postEvent(event, true).catch(e => {
 				console.log('Failed to send page view event', event.localUuid, 'will be retried later on:', e);
