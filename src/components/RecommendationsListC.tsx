@@ -81,6 +81,10 @@ export const RecommendationsListC: React.FC<{
 			return;
 		}
 
+		if (url.includes('&list=')) {
+			return;
+		}
+
 		setNonPersonalizedLoading(true);
 		setDefaultLoading(true);
 
