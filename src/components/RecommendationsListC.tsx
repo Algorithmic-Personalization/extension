@@ -77,6 +77,10 @@ export const RecommendationsListC: React.FC<{
 			return;
 		}
 
+		if (!url.includes('/watch')) {
+			return;
+		}
+
 		setNonPersonalizedLoading(true);
 		setDefaultLoading(true);
 
