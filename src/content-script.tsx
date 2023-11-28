@@ -92,7 +92,7 @@ const onVisitHomePage = async () => {
 	log('onVisitHomePage');
 	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
 	const ids = await fetchIds(recommendationsSource);
-	log('videos from', recommendationsSource, ids);
+	console.log('videos from', recommendationsSource, ids);
 
 	const scripts = Array.from(document.querySelectorAll('script'));
 	const script = scripts.find(script => {
@@ -121,7 +121,7 @@ const onVisitHomePage = async () => {
 		const initialData = JSON.parse(jsonText) as Record<string, unknown>;
 		const homeContent = extractHomeContent(initialData);
 
-		console.log({home: {homeContent}});
+		console.log('home content', homeContent);
 	} catch (error) {
 		console.error('Could not parse ytInitialData JSON on home page.');
 		console.error(error);

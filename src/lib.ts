@@ -44,7 +44,12 @@ export const extractYtInitialData = (rawPageHtml: string) => {
 	});
 };
 
-export type HomeCard = RecommendationCard | ReelCard | Playlist;
+export type HomeCard = RecommendationCard | ReelCard | Playlist | NestedHomeCard;
+
+export type NestedHomeCard = {
+	type: 'nested';
+	cards: HomeCard[];
+};
 
 export type ReelCard = {
 	type: 'reel';
@@ -132,7 +137,14 @@ const extractFromArray = (array: Array<Record<string, unknown>>): HomeCard[] => 
 			}
 
 			const nested = extractFromArray(shelf);
-			homeThings.push(...nested);
+			homeThings.push({
+				type: 'nested',
+				cards: nested,
+			});
+		} else if (has('continuationItemRenderer')(thing)) {
+			log('ignored thing', thing);
+		} else {
+			log('!!! unknown thing', thing);
 		}
 	}
 
