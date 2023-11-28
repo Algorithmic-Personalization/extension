@@ -44,11 +44,19 @@ export const extractYtInitialData = (rawPageHtml: string) => {
 	});
 };
 
-type HomeThing = HomeRecommendation | Reel | Playlist;
+export type HomeCard = RecommendationCard | ReelCard | Playlist;
 
-type Reel = {
+export type ReelCard = {
 	type: 'reel';
+	reel: Reel;
+};
+
+export type Reel = {
 	videoId: string;
+	videoType: string;
+	headline: string;
+	miniatureUrl: string;
+	views: string;
 };
 
 type Playlist = {
@@ -56,15 +64,9 @@ type Playlist = {
 	playlistId: string;
 };
 
-type HomeRecommendation = {
+type RecommendationCard = {
 	type: 'recommendation';
-	data: Recommendation;
-};
-
-export type HomeCard = {
-	rowIndex: number | 'tbd';
-	colIndex: number | 'tbd';
-	data: HomeThing;
+	recommendation: Recommendation;
 };
 
 const extractFromArray = (array: Array<Record<string, unknown>>): HomeCard[] => {
@@ -78,7 +80,7 @@ const extractFromArray = (array: Array<Record<string, unknown>>): HomeCard[] => 
 				const videoData = get(['videoRenderer'])(preVideoData);
 				const videoId = get(['videoId'])(videoData) as string;
 
-				const video: Recommendation = {
+				const recommendation: Recommendation = {
 					videoId,
 					title: get(['title', 'runs', '0', 'text'])(videoData) as string,
 					url: `https://www.youtube.com/watch?v=${videoId}`,
@@ -89,29 +91,29 @@ const extractFromArray = (array: Array<Record<string, unknown>>): HomeCard[] => 
 					personalization: 'personalized',
 				};
 
-				const homeThing: HomeRecommendation = {
+				const homeThing: RecommendationCard = {
 					type: 'recommendation',
-					data: video,
+					recommendation,
 				};
 
-				homeThings.push({
-					rowIndex: 'tbd',
-					colIndex: 'tbd',
-					data: homeThing,
-				});
+				homeThings.push(homeThing);
 			} else if (has('reelItemRenderer')(preVideoData)) {
 				const videoId = get(['reelItemRenderer', 'videoId'])(preVideoData) as string;
 
 				const reel: Reel = {
-					type: 'reel',
 					videoId,
+					videoType: get(['reelItemRenderer', 'videoType'])(preVideoData) as string,
+					headline: get(['reelItemRenderer', 'headline', 'simpleText'])(preVideoData) as string,
+					miniatureUrl: get(['reelItemRenderer', 'thumbnail', 'thumbnails', '0', 'url'])(preVideoData) as string,
+					views: get(['reelItemRenderer', 'viewCountText', 'simpleText'])(preVideoData) as string,
 				};
 
-				homeThings.push({
-					rowIndex: 'tbd',
-					colIndex: 'tbd',
-					data: reel,
-				});
+				const reelCard: ReelCard = {
+					type: 'reel',
+					reel,
+				};
+
+				homeThings.push(reelCard);
 			} else if (has('playlistRenderer')(preVideoData)) {
 				const playlistId = get(['playlistRenderer', 'playlistId'])(preVideoData) as string;
 
@@ -120,11 +122,7 @@ const extractFromArray = (array: Array<Record<string, unknown>>): HomeCard[] => 
 					playlistId,
 				};
 
-				homeThings.push({
-					rowIndex: 'tbd',
-					colIndex: 'tbd',
-					data: playlist,
-				});
+				homeThings.push(playlist);
 			}
 		} else if (has('richSectionRenderer')(thing)) {
 			const shelf = get(['richSectionRenderer', 'content', 'richShelfRenderer', 'contents'])(thing);
