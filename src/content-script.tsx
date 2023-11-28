@@ -3,7 +3,8 @@ import {createRoot} from 'react-dom/client';
 
 import {ThemeProvider} from '@mui/material';
 
-import {isOnVideoPage, isVideoPage} from './lib';
+import {isOnVideoPage, isVideoPage, isOnHomePage, log} from './lib';
+import fetchIds from './fetchYtChannelVideoIds';
 import App from './App';
 import theme from './theme';
 
@@ -87,6 +88,13 @@ window.addEventListener('unload', () => {
 	attemptToSaveWatchTime(window.location.href);
 });
 
+const onVisitHomePage = async () => {
+	log('onVisitHomePage');
+	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
+	const ids = await fetchIds(recommendationsSource);
+	log('IDS', ids);
+};
+
 const observer = new MutationObserver(() => {
 	if (window.location.href !== previousUrl) {
 		if (isVideoPage(previousUrl)) {
@@ -98,6 +106,10 @@ const observer = new MutationObserver(() => {
 			// for watch time events...
 			// Beware that this will reset watch time of previous video.
 			watchVideoEvents();
+		}
+
+		if (isOnHomePage()) {
+			void onVisitHomePage();
 		}
 
 		// Update the previous URL AFTER saving the watch time

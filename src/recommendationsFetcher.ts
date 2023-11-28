@@ -1,6 +1,7 @@
 import type Recommendation from './common/types/Recommendation';
 
 import {has} from './common/util';
+import {extractYtInitialData} from './lib';
 
 const getDataContainingList = (results: unknown[], useCredentials: boolean): unknown[] => {
 	if (!useCredentials) {
@@ -65,19 +66,7 @@ export const fetchRecommendations = async (videoUrl: string, useCredentials: boo
 		credentials: useCredentials ? 'include' : 'omit',
 	})).text();
 
-	const parser = new DOMParser();
-	const doc = parser.parseFromString(html, 'text/html');
-	const scripts = Array.from(doc.querySelectorAll('script'));
-
-	const initialDataScript = scripts.find(script => {
-		const {textContent} = script;
-
-		if (textContent) {
-			return textContent.trimStart().startsWith('var ytInitialData = ');
-		}
-
-		return false;
-	});
+	const initialDataScript = extractYtInitialData(html);
 
 	if (!initialDataScript) {
 		throw new Error('Could not find initial data script');
