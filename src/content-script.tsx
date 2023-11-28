@@ -3,7 +3,7 @@ import {createRoot} from 'react-dom/client';
 
 import {ThemeProvider} from '@mui/material';
 
-import {isOnVideoPage, isVideoPage, isOnHomePage, log} from './lib';
+import {isOnVideoPage, isVideoPage, isOnHomePage, log, extractHomeContent} from './lib';
 import fetchIds from './fetchYtChannelRecommendations';
 import App from './App';
 import theme from './theme';
@@ -119,7 +119,9 @@ const onVisitHomePage = async () => {
 
 	try {
 		const initialData = JSON.parse(jsonText) as Record<string, unknown>;
-		console.log({home: {initialData}});
+		const homeContent = extractHomeContent(initialData);
+
+		console.log({home: {homeContent}});
 	} catch (error) {
 		console.error('Could not parse ytInitialData JSON on home page.');
 		console.error(error);
