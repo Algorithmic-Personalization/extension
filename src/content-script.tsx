@@ -93,6 +93,37 @@ const onVisitHomePage = async () => {
 	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
 	const ids = await fetchIds(recommendationsSource);
 	log('videos from', recommendationsSource, ids);
+
+	const scripts = Array.from(document.querySelectorAll('script'));
+	const script = scripts.find(script => {
+		const {textContent} = script;
+
+		if (textContent) {
+			return textContent.trimStart().startsWith('var ytInitialData = ');
+		}
+
+		return false;
+	});
+
+	if (!script) {
+		console.error('Could not find ytInitialData script on home page.');
+		return;
+	}
+
+	const jsonText = script.textContent?.replace('var ytInitialData = ', '').replace(/;$/, '').trim();
+
+	if (!jsonText) {
+		console.error('Could not find ytInitialData JSON on home page.');
+		return;
+	}
+
+	try {
+		const initialData = JSON.parse(jsonText) as Record<string, unknown>;
+		console.log({home: {initialData}});
+	} catch (error) {
+		console.error('Could not parse ytInitialData JSON on home page.');
+		console.error(error);
+	}
 };
 
 const observer = new MutationObserver(() => {
