@@ -1,8 +1,10 @@
+import type Recommendation from './common/types/Recommendation';
+
 import {extractYtInitialData} from './lib';
 import {get} from './common/util';
 
-export const fetchYtChannelVideoIds = async (channelId: string): Promise<string[]> => {
-	const videoIds: string[] = [];
+export const fetchYtChannelRecommendations = async (channelId: string): Promise<Recommendation[]> => {
+	const videos: Recommendation[] = [];
 
 	const channelUrl = `https://www.youtube.com/channel/${channelId}`;
 
@@ -75,15 +77,27 @@ export const fetchYtChannelVideoIds = async (channelId: string): Promise<string[
 			try {
 				const videoRenderer = get(pathToVideo)(richItemRenderer);
 
-				const id = get(['videoId'])(videoRenderer) as string;
-				videoIds.push(id);
+				const videoId = get(['videoId'])(videoRenderer) as string;
+
+				const video: Recommendation = {
+					videoId,
+					title: get(['title', 'runs', '0', 'text'])(videoRenderer) as string,
+					url: `https://www.youtube.com/watch?v=${videoId}`,
+					channelName: get(['longBylineText', 'runs', '0', 'text'])(videoRenderer) as string,
+					views: get(['shortViewCountText', 'simpleText'])(videoRenderer) as string,
+					publishedSince: get(['publishedTimeText', 'simpleText'])(videoRenderer) as string,
+					miniatureUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+					personalization: 'personalized',
+				};
+
+				videos.push(video);
 			} catch (error) {
 				console.log('could not find a videoRenderer, no big deal');
 			}
 		}
 	}
 
-	return videoIds;
+	return videos;
 };
 
-export default fetchYtChannelVideoIds;
+export default fetchYtChannelRecommendations;

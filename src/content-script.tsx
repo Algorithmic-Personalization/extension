@@ -4,7 +4,7 @@ import {createRoot} from 'react-dom/client';
 import {ThemeProvider} from '@mui/material';
 
 import {isOnVideoPage, isVideoPage, isOnHomePage, log} from './lib';
-import fetchIds from './fetchYtChannelVideoIds';
+import fetchIds from './fetchYtChannelRecommendations';
 import App from './App';
 import theme from './theme';
 
@@ -92,7 +92,7 @@ const onVisitHomePage = async () => {
 	log('onVisitHomePage');
 	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
 	const ids = await fetchIds(recommendationsSource);
-	log('IDS', ids);
+	log('videos from', recommendationsSource, ids);
 };
 
 const observer = new MutationObserver(() => {
