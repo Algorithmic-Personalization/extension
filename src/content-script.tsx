@@ -3,14 +3,15 @@ import {createRoot} from 'react-dom/client';
 
 import {ThemeProvider} from '@mui/material';
 
-import {isOnVideoPage, isVideoPage, isOnHomePage, log, extractHomeContent} from './lib';
-import fetchIds from './fetchYtChannelRecommendations';
+import {isOnVideoPage, isVideoPage, isOnHomePage, log, extractHomeContent, type RecommendationCard} from './lib';
+import fetchRecommendationsToInject from './fetchYtChannelRecommendations';
 import App from './App';
 import theme from './theme';
 
 import {defaultApi as api, apiProvider as ApiProvider} from './apiProvider';
 
 import WatchTimeEvent from './common/models/watchTimeEvent';
+import {type Recommendation} from './common/types/Recommendation';
 
 let root: HTMLElement | undefined;
 let previousUrl: string | undefined;
@@ -88,11 +89,29 @@ window.addEventListener('unload', () => {
 	attemptToSaveWatchTime(window.location.href);
 });
 
+const replaceHomeVideo = (videoId: string, recommendation: Recommendation) => {
+	const links = Array.from(document.querySelectorAll(`a.ytd-thumbnail[href="/watch?v=${videoId}"]`));
+
+	if (links.length === 0) {
+		console.error('could not find link for', videoId);
+		return;
+	}
+
+	if (links.length > 1) {
+		console.error('found multiple links for', videoId);
+		return;
+	}
+
+	const [link] = links;
+
+	console.log('link for', videoId, link, 'to replace with', recommendation);
+};
+
 const onVisitHomePage = async () => {
 	log('onVisitHomePage');
 	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
-	const ids = await fetchIds(recommendationsSource);
-	console.log('videos from', recommendationsSource, ids);
+	const injectionSource = await fetchRecommendationsToInject(recommendationsSource);
+	console.log('videos from', recommendationsSource, injectionSource);
 
 	const scripts = Array.from(document.querySelectorAll('script'));
 	const script = scripts.find(script => {
@@ -122,6 +141,14 @@ const onVisitHomePage = async () => {
 		const homeContent = extractHomeContent(initialData);
 
 		console.log('home content', homeContent);
+
+		const homeVideos = homeContent.filter(item => item.type === 'recommendation').map(
+			item => (item as RecommendationCard).recommendation,
+		);
+
+		for (let i = 0; i < 3; ++i) {
+			replaceHomeVideo(homeVideos[i].videoId, injectionSource[i]);
+		}
 	} catch (error) {
 		console.error('Could not parse ytInitialData JSON on home page.');
 		console.error(error);

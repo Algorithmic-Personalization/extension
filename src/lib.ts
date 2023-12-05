@@ -69,7 +69,7 @@ type Playlist = {
 	playlistId: string;
 };
 
-type RecommendationCard = {
+export type RecommendationCard = {
 	type: 'recommendation';
 	recommendation: Recommendation;
 };
