@@ -79,6 +79,24 @@ export const fetchYtChannelRecommendations = async (channelId: string): Promise<
 
 				const videoId = get(['videoId'])(videoRenderer) as string;
 
+				const channelMiniatureUrl = get([
+					'channelThumbnailSupportedRenderers',
+					'channelThumbnailWithLinkRenderer',
+					'thumbnail',
+					'thumbnails',
+					'0',
+					'url',
+				])(videoRenderer) as string;
+
+				const channelShortName = get([
+					'ownerText',
+					'runs',
+					'0',
+					'navigationEndpoint',
+					'browseEndpoint',
+					'canonicalBaseUrl',
+				])(videoRenderer) as string;
+
 				const video: Recommendation = {
 					videoId,
 					title: get(['title', 'runs', '0', 'text'])(videoRenderer) as string,
@@ -88,6 +106,8 @@ export const fetchYtChannelRecommendations = async (channelId: string): Promise<
 					publishedSince: get(['publishedTimeText', 'simpleText'])(videoRenderer) as string,
 					miniatureUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
 					personalization: 'personalized',
+					channelMiniatureUrl,
+					channelShortName,
 				};
 
 				videos.push(video);

@@ -85,6 +85,24 @@ const extractFromArray = (array: Array<Record<string, unknown>>): HomeCard[] => 
 				const videoData = get(['videoRenderer'])(preVideoData);
 				const videoId = get(['videoId'])(videoData) as string;
 
+				const channelMiniatureUrl = get([
+					'channelThumbnailSupportedRenderers',
+					'channelThumbnailWithLinkRenderer',
+					'thumbnail',
+					'thumbnails',
+					'0',
+					'url',
+				])(videoData) as string;
+
+				const channelShortName = get([
+					'ownerText',
+					'runs',
+					'0',
+					'navigationEndpoint',
+					'browseEndpoint',
+					'canonicalBaseUrl',
+				])(videoData) as string;
+
 				const recommendation: Recommendation = {
 					videoId,
 					title: get(['title', 'runs', '0', 'text'])(videoData) as string,
@@ -94,6 +112,8 @@ const extractFromArray = (array: Array<Record<string, unknown>>): HomeCard[] => 
 					publishedSince: get(['publishedTimeText', 'simpleText'])(videoData) as string,
 					miniatureUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
 					personalization: 'personalized',
+					channelMiniatureUrl,
+					channelShortName,
 				};
 
 				const homeThing: RecommendationCard = {

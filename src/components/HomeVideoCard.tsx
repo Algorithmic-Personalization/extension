@@ -9,10 +9,12 @@ export const HomeVideoCard: React.FC<Recommendation & {onClick: () => Promise<vo
 	title,
 	views,
 	publishedSince,
+	channelShortName,
+	channelMiniatureUrl,
 // eslint-disable-next-line arrow-body-style
 }) => {
-	return (<div className='style-scope ytd-rich-item-renderer'>
-		<div className='style-scope ytd-rich-grid-media'>
+	return (<section className='style-scope ytd-rich-item-renderer'>
+		<div id='thumbnail' className='style-scope ytd-rich-grid-media'>
 			<div className='style-scope ytd-rich-grid-media'>
 				<a
 					className='yt-simple-endpoint inline-block style-scope ytd-thumbnail'
@@ -31,9 +33,23 @@ export const HomeVideoCard: React.FC<Recommendation & {onClick: () => Promise<vo
 				</a>
 			</div>
 		</div>
-		{/* TODO: missing link to channel */}
-		<div className='style-scope ytd-rich-grid-media'>
-			<div className='style-scope ytd-rich-grid-media'>
+		<div id='details' className='style-scope ytd-rich-grid-media'>
+			<a
+				id='avatar-link'
+				href={channelShortName}
+				title={channelName}
+				className='yt-simple-endpoint style-scope ytd-rich-grid-media'
+			>
+				<div className='style-scope ytd-rich-grid-media no-transition'>
+					<img
+						width={48}
+						className='style-scope yt-img-shadow'
+						src={channelMiniatureUrl}
+						style={{borderRadius: '50%'}}
+					/>
+				</div>
+			</a>
+			<div id='meta' className='style-scope ytd-rich-grid-media'>
 				<h3 className='style-scope ytd-rich-grid-media'>
 					<a
 						className='yt-simple-endpoint focus-on-expand style-scope ytd-rich-grid-media'
@@ -47,31 +63,29 @@ export const HomeVideoCard: React.FC<Recommendation & {onClick: () => Promise<vo
 						</div>
 					</a>
 				</h3>
-				<div className='grid style-scope ytd-rich-grid-media'>
-					<div className='style-scope ytd-video-meta-block'>
-						<div className='style-scope ytd-video-meta-block'>
+				<div className='grid style-scope ytd-rich-grid-media byline-separated'>
+					<div id='metadata' className='style-scope ytd-video-meta-block' style={{
+						flexDirection: 'column',
+					}}>
+						<div id='byline-container' className='style-scope ytd-video-meta-block'>
 							<div className='style-scope ytd-video-meta-block'>
-								<div className='style-scope ytd-video-meta-block'>
-									<div className='style-scope ytd-video-meta-block'>
-										<Typography variant='body2' component='a'>
-											{channelName}
-										</Typography>
-									</div>
-								</div>
-								<div className='style-scope ytd-video-meta-block'>
-									<div className='style-scope ytd-video-meta-block'>
-										<Typography variant='body2' component='span'>
-											{views}&nbsp;•&nbsp;{publishedSince}
-										</Typography>
-									</div>
+								<div id='container' className='style-scope ytd-channel-name'>
+									<Typography variant='body2' component='a'>
+										{channelName}
+									</Typography>
 								</div>
 							</div>
+						</div>
+						<div id='metadata-line' className='style-scope ytd-video-meta-block'>
+							<Typography variant='body2' component='span'>
+								{views}&nbsp;•&nbsp;{publishedSince}
+							</Typography>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-	</div>);
+	</section>);
 };
 
 export default HomeVideoCard;
