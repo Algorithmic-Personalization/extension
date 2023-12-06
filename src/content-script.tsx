@@ -89,6 +89,20 @@ window.addEventListener('unload', () => {
 	attemptToSaveWatchTime(window.location.href);
 });
 
+const findParentById = (elId: string) => (elt: Element): Element | undefined => {
+	const recurse = findParentById(elId);
+
+	if (elt.id === elId) {
+		return elt;
+	}
+
+	if (elt.parentElement) {
+		return recurse(elt.parentElement);
+	}
+
+	return undefined;
+};
+
 const replaceHomeVideo = (videoId: string, recommendation: Recommendation) => {
 	const links = Array.from(document.querySelectorAll(`a.ytd-thumbnail[href="/watch?v=${videoId}"]`));
 
@@ -105,6 +119,15 @@ const replaceHomeVideo = (videoId: string, recommendation: Recommendation) => {
 	const [link] = links;
 
 	console.log('link for', videoId, link, 'to replace with', recommendation);
+
+	const parent = findParentById('content')(link);
+
+	if (!parent) {
+		console.error('could not find parent for', videoId);
+		return;
+	}
+
+	console.log('parent for', videoId, parent);
 };
 
 const onVisitHomePage = async () => {
