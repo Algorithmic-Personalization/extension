@@ -97,6 +97,17 @@ export const fetchYtChannelRecommendations = async (channelId: string): Promise<
 					'canonicalBaseUrl',
 				])(videoRenderer) as string;
 
+				const hoverAnimationUrl = get([
+					'richThumbnail',
+					'movingThumbnailRenderer',
+					'movingThumbnailDetails',
+					'thumbnails',
+					'0',
+					'url',
+				])(videoRenderer) as string;
+
+				console.log({videoRenderer});
+
 				const video: Recommendation = {
 					videoId,
 					title: get(['title', 'runs', '0', 'text'])(videoRenderer) as string,
@@ -108,6 +119,7 @@ export const fetchYtChannelRecommendations = async (channelId: string): Promise<
 					personalization: 'personalized',
 					channelMiniatureUrl,
 					channelShortName,
+					hoverAnimationUrl,
 				};
 
 				videos.push(video);
