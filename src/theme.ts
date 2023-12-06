@@ -27,4 +27,14 @@ theme.typography.body1 = {
 
 };
 
+theme.typography.h3 = {
+	fontFamily: 'Roboto, Arial, sans-serif',
+	fontSize: 16,
+	fontWeight: 500,
+	lineHeight: '2.2rem',
+	textOverflow: 'ellipsis',
+	textWrap: 'wrap',
+	whiteSpaceCollapse: 'collapse',
+};
+
 export default theme;

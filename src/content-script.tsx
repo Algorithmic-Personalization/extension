@@ -8,6 +8,8 @@ import fetchRecommendationsToInject from './fetchYtChannelRecommendations';
 import App from './App';
 import theme from './theme';
 
+import HomeVideoCard from './components/HomeVideoCard';
+
 import {defaultApi as api, apiProvider as ApiProvider} from './apiProvider';
 
 import WatchTimeEvent from './common/models/watchTimeEvent';
@@ -128,6 +130,25 @@ const replaceHomeVideo = (videoId: string, recommendation: Recommendation) => {
 	}
 
 	console.log('parent for', videoId, parent);
+
+	const onClick = async () => {
+		console.log('handleRecommendationClicked', recommendation);
+	};
+
+	const card = (
+		<React.StrictMode>
+			<ThemeProvider theme={theme}>
+				<HomeVideoCard {
+					...{
+						...recommendation,
+						onClick,
+						isForHomePage: true,
+					}} />
+			</ThemeProvider>
+		</React.StrictMode>
+	);
+
+	createRoot(parent).render(card);
 };
 
 const onVisitHomePage = async () => {
