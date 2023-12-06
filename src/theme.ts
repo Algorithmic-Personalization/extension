@@ -27,6 +27,15 @@ theme.typography.body1 = {
 
 };
 
+theme.typography.body2 = {
+	fontSize: '14px',
+	color: isDarkMode ? 'rgb(170, 170, 170)' : 'rgb(96, 96, 96)',
+	fontWeight: 400,
+	fontFamily: 'Roboto, Arial, sans-serif',
+	textOverflow: 'ellipsis',
+	lineHeight: '18px',
+};
+
 theme.typography.h3 = {
 	fontFamily: 'Roboto, Arial, sans-serif',
 	fontSize: 16,

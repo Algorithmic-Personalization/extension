@@ -5,7 +5,10 @@ import type Recommendation from '../common/types/Recommendation';
 
 export const HomeVideoCard: React.FC<Recommendation & {onClick: () => Promise<void>}> = ({
 	videoId,
+	channelName,
 	title,
+	views,
+	publishedSince,
 // eslint-disable-next-line arrow-body-style
 }) => {
 	return (<div className='style-scope ytd-rich-item-renderer'>
@@ -44,6 +47,28 @@ export const HomeVideoCard: React.FC<Recommendation & {onClick: () => Promise<vo
 						</div>
 					</a>
 				</h3>
+				<div className='grid style-scope ytd-rich-grid-media'>
+					<div className='style-scope ytd-video-meta-block'>
+						<div className='style-scope ytd-video-meta-block'>
+							<div className='style-scope ytd-video-meta-block'>
+								<div className='style-scope ytd-video-meta-block'>
+									<div className='style-scope ytd-video-meta-block'>
+										<Typography variant='body2' component='a'>
+											{channelName}
+										</Typography>
+									</div>
+								</div>
+								<div className='style-scope ytd-video-meta-block'>
+									<div className='style-scope ytd-video-meta-block'>
+										<Typography variant='body2' component='span'>
+											{views}&nbsp;•&nbsp;{publishedSince}
+										</Typography>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>);
