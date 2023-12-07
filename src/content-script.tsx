@@ -152,20 +152,10 @@ const replaceHomeVideo = (videoId: string, recommendation: Recommendation): 0 | 
 	return 1;
 };
 
-let contentsDisplayProperty: string | undefined;
-
 const onVisitHomePage = async () => {
 	log('onVisitHomePage');
 	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
 	const injectionSource = await fetchRecommendationsToInject(recommendationsSource);
-
-	const contentsElement = document.querySelector('#contents');
-	console.log({contentsElement});
-	if (contentsElement) {
-		log('hiding contents element');
-		contentsDisplayProperty = (contentsElement as HTMLElement).style.display;
-		(contentsElement as HTMLElement).style.display = 'none';
-	}
 
 	const scripts = Array.from(document.querySelectorAll('script'));
 	const script = scripts.find(script => {
@@ -213,11 +203,6 @@ const onVisitHomePage = async () => {
 			await new Promise(resolve => {
 				setTimeout(resolve, 1000);
 			});
-		}
-
-		if (contentsElement) {
-			log('revealing contents element again');
-			(contentsElement as HTMLElement).style.display = contentsDisplayProperty ?? 'block';
 		}
 	} catch (error) {
 		console.error('Could not parse ytInitialData JSON on home page.');
