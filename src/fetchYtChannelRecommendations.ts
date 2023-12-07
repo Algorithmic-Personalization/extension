@@ -104,8 +104,6 @@ export const fetchYtChannelRecommendations = async (channelId: string): Promise<
 					'url',
 				])(videoRenderer) as string;
 
-				console.log({videoRenderer});
-
 				const video: Recommendation = {
 					videoId,
 					title: get(['title', 'runs', '0', 'text'])(videoRenderer) as string,

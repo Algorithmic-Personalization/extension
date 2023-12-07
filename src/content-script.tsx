@@ -105,17 +105,17 @@ const findParentById = (elId: string) => (elt: Element): Element | undefined => 
 	return undefined;
 };
 
-const replaceHomeVideo = (videoId: string, recommendation: Recommendation) => {
+const replaceHomeVideo = (videoId: string, recommendation: Recommendation): 0 | 1 => {
 	const links = Array.from(document.querySelectorAll(`a.ytd-thumbnail[href="/watch?v=${videoId}"]`));
 
 	if (links.length === 0) {
 		console.error('could not find link for', videoId);
-		return;
+		return 0;
 	}
 
 	if (links.length > 1) {
 		console.error('found multiple links for', videoId);
-		return;
+		return 0;
 	}
 
 	const [link] = links;
@@ -126,7 +126,7 @@ const replaceHomeVideo = (videoId: string, recommendation: Recommendation) => {
 
 	if (!parent) {
 		console.error('could not find parent for', videoId);
-		return;
+		return 0;
 	}
 
 	console.log('parent for', videoId, parent);
@@ -149,14 +149,23 @@ const replaceHomeVideo = (videoId: string, recommendation: Recommendation) => {
 	);
 
 	createRoot(parent).render(card);
+	return 1;
 };
 
-let jsonData: string | undefined;
+let contentsDisplayProperty: string | undefined;
 
 const onVisitHomePage = async () => {
 	log('onVisitHomePage');
 	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
 	const injectionSource = await fetchRecommendationsToInject(recommendationsSource);
+
+	const contentsElement = document.querySelector('#contents');
+	console.log({contentsElement});
+	if (contentsElement) {
+		log('hiding contents element');
+		contentsDisplayProperty = (contentsElement as HTMLElement).style.display;
+		(contentsElement as HTMLElement).style.display = 'none';
+	}
 
 	const scripts = Array.from(document.querySelectorAll('script'));
 	const script = scripts.find(script => {
@@ -175,7 +184,6 @@ const onVisitHomePage = async () => {
 	}
 
 	const jsonText = script.textContent?.replace('var ytInitialData = ', '').replace(/;$/, '').trim();
-	jsonData = jsonText;
 
 	if (!jsonText) {
 		console.error('Could not find ytInitialData JSON on home page.');
@@ -190,8 +198,26 @@ const onVisitHomePage = async () => {
 			item => (item as RecommendationCard).recommendation,
 		);
 
-		for (let i = 0; i < 3; ++i) {
-			replaceHomeVideo(homeVideos[i].videoId, injectionSource[i]);
+		const replace = () => {
+			let total = 0;
+			for (let i = 0; i < 3; ++i) {
+				total += replaceHomeVideo(homeVideos[i].videoId, injectionSource[i]);
+			}
+
+			return total === 3;
+		};
+
+		while (!replace()) {
+			log('not all links replaced yet, waiting 1 second');
+			// eslint-disable-next-line no-await-in-loop
+			await new Promise(resolve => {
+				setTimeout(resolve, 1000);
+			});
+		}
+
+		if (contentsElement) {
+			log('revealing contents element again');
+			(contentsElement as HTMLElement).style.display = contentsDisplayProperty ?? 'block';
 		}
 	} catch (error) {
 		console.error('Could not parse ytInitialData JSON on home page.');

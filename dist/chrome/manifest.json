@@ -1,6 +1,6 @@
 {
 	"name": "Algorithmic Personalization Project",
-	"version": "1.6.4",
+	"version": "2.0.0",
 	"manifest_version": 3,
 	"content_scripts": [
 		{
