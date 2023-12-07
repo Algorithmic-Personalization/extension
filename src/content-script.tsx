@@ -157,7 +157,6 @@ const onVisitHomePage = async () => {
 	log('onVisitHomePage');
 	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
 	const injectionSource = await fetchRecommendationsToInject(recommendationsSource);
-	console.log('videos from', recommendationsSource, injectionSource);
 
 	const scripts = Array.from(document.querySelectorAll('script'));
 	const script = scripts.find(script => {
@@ -186,8 +185,6 @@ const onVisitHomePage = async () => {
 	try {
 		const initialData = JSON.parse(jsonText) as Record<string, unknown>;
 		const homeContent = extractHomeContent(initialData);
-
-		console.log('home content', homeContent);
 
 		const homeVideos = homeContent.filter(item => item.type === 'recommendation').map(
 			item => (item as RecommendationCard).recommendation,

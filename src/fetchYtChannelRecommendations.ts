@@ -26,8 +26,6 @@ export const fetchYtChannelRecommendations = async (channelId: string): Promise<
 
 	const initialData = JSON.parse(jsonText) as Record<string, unknown>;
 
-	console.log({initialData});
-
 	const pathToData = [
 		'contents',
 		'twoColumnBrowseResultsRenderer',

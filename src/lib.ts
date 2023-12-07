@@ -185,8 +185,6 @@ export const extractHomeContent = (initialData: Record<string, unknown>): HomeCa
 
 	const contents = get(pathToData)(initialData);
 
-	console.log({contents});
-
 	if (!Array.isArray(contents)) {
 		throw new Error('Expected contents to be an array');
 	}
