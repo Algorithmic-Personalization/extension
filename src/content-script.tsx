@@ -151,6 +151,8 @@ const replaceHomeVideo = (videoId: string, recommendation: Recommendation) => {
 	createRoot(parent).render(card);
 };
 
+let jsonData: string | undefined;
+
 const onVisitHomePage = async () => {
 	log('onVisitHomePage');
 	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
@@ -174,6 +176,7 @@ const onVisitHomePage = async () => {
 	}
 
 	const jsonText = script.textContent?.replace('var ytInitialData = ', '').replace(/;$/, '').trim();
+	jsonData = jsonText;
 
 	if (!jsonText) {
 		console.error('Could not find ytInitialData JSON on home page.');
@@ -200,6 +203,25 @@ const onVisitHomePage = async () => {
 };
 
 const observer = new MutationObserver(() => {
+	/* Was for investigating
+	const videoElements = Array.from(document.querySelectorAll('video'));
+	console.log('videoElements', videoElements);
+	for (const vid of videoElements) {
+		const {currentSrc} = vid;
+		if (currentSrc) {
+			const last = currentSrc.split('/').pop();
+
+			if (last) {
+				console.log('currentSrc', currentSrc);
+				const found = jsonData?.includes(last);
+				console.log('found', found);
+			} else {
+				console.log('currentSrc not found in json');
+			}
+		}
+	}
+	*/
+
 	if (window.location.href !== previousUrl) {
 		if (isVideoPage(previousUrl)) {
 			attemptToSaveWatchTime(previousUrl);

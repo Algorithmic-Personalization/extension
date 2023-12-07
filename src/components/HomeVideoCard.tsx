@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useRef} from 'react';
 import {Typography} from '@mui/material';
 
 import type Recommendation from '../common/types/Recommendation';
@@ -15,11 +15,11 @@ export const HomeVideoCard: React.FC<Recommendation & {onClick: () => Promise<vo
 }) => {
 	const [isHovering, setHovering] = useState(false);
 
-	console.log({hoverAnimationUrl});
-
 	const mediaLink = isHovering
 		? hoverAnimationUrl
 		: `https://i.ytimg.com/vi/${videoId}/hq720.jpg`;
+
+	const imgRef = useRef<HTMLImageElement>(null);
 
 	return (<section
 		className='style-scope ytd-rich-item-renderer'
@@ -39,28 +39,29 @@ export const HomeVideoCard: React.FC<Recommendation & {onClick: () => Promise<vo
 					className='yt-simple-endpoint inline-block style-scope ytd-thumbnail'
 					href={`/watch?v=${videoId}`}
 				>
-					<div style={{height: 224}}>
-						<div className='style-scope ytd-thumbnail'>
-							{(!isHovering && <img
-								style={{
-									backgroundColor: 'transparent',
-									borderRadius: 12,
-									height: 224,
-								}}
-								className='yt-core-image--fill-parent-height yt-core-image--fill-parent-width yt-core-image yt-core-image--content-mode-scale-aspect-fill yt-core-image--loaded'
-								src={mediaLink}
-							/>)}
-							<img
-								style={{
-									backgroundColor: 'transparent',
-									borderRadius: 12,
-									display: isHovering ? 'block' : 'none',
-									height: 224,
-								}}
-								className='yt-core-image--fill-parent-height yt-core-image--fill-parent-width yt-core-image yt-core-image--content-mode-scale-aspect-fill yt-core-image--loaded'
-								src={mediaLink}
-							/>
-						</div>
+					<div className='style-scope ytd-thumbnail'>
+						{(!isHovering && <img
+							style={{
+								backgroundColor: 'transparent',
+								borderRadius: 12,
+							}}
+							className='yt-core-image--fill-parent-height yt-core-image--fill-parent-width yt-core-image yt-core-image--content-mode-scale-aspect-fill yt-core-image--loaded'
+							src={mediaLink}
+							ref={imgRef}
+						/>)}
+						<img
+							style={{
+								backgroundColor: 'transparent',
+								borderRadius: 12,
+								display: isHovering ? 'block' : 'none',
+								...(imgRef.current ? {
+									width: imgRef.current.width,
+									height: imgRef.current.height,
+								} : {}),
+							}}
+							className='yt-core-image--fill-parent-height yt-core-image--fill-parent-width yt-core-image yt-core-image--content-mode-scale-aspect-fill yt-core-image--loaded'
+							src={mediaLink}
+						/>
 					</div>
 				</a>
 			</div>
