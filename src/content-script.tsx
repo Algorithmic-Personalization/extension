@@ -131,7 +131,7 @@ const replaceHomeVideo = (videoId: string, recommendation: Recommendation): 0 | 
 
 	console.log('parent for', videoId, parent);
 
-	const onClick = async () => {
+	const onInjectedVideoCardClicked = async () => {
 		console.log('handleRecommendationClicked', recommendation);
 	};
 
@@ -141,7 +141,7 @@ const replaceHomeVideo = (videoId: string, recommendation: Recommendation): 0 | 
 				<HomeVideoCard {
 					...{
 						...recommendation,
-						onClick,
+						onClick: onInjectedVideoCardClicked,
 					}} />
 			</ThemeProvider>
 		</React.StrictMode>
@@ -164,9 +164,43 @@ if (!homeLinkChanged) {
 	});
 }
 
-const onVisitHomePage = async () => {
-	log('onVisitHomePage');
+let homePageChanged = false;
 
+const findHighestSingleParent = (elt: HTMLElement): HTMLElement => {
+	if (elt.parentElement && elt.parentElement.children.length === 1) {
+		return findHighestSingleParent(elt.parentElement);
+	}
+
+	return elt;
+};
+
+const trackClicks = (elt: HTMLElement) => {
+	const trap = findHighestSingleParent(elt);
+	log('click listener on miniature', elt, 'using', trap);
+
+	trap.addEventListener('click', e => {
+		e.preventDefault();
+		e.stopPropagation();
+		e.stopImmediatePropagation();
+
+		log('captured a click on a miniature', elt);
+	}, {capture: true});
+
+	const links = Array.from(trap.querySelectorAll('a'));
+
+	for (const link of links) {
+		link.onclick = e => {
+			e.preventDefault();
+			e.stopPropagation();
+			e.stopImmediatePropagation();
+
+			log('prevented a click on a link', link);
+		};
+	}
+};
+
+const onVisitHomePageFirstTime = async () => {
+	log('onVisitHomePage');
 	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
 	const injectionSource = await fetchRecommendationsToInject(recommendationsSource);
 
@@ -201,21 +235,45 @@ const onVisitHomePage = async () => {
 			item => (item as RecommendationCard).recommendation,
 		);
 
+		const idsReplaced: string[] = [];
+
 		const replace = () => {
 			let total = 0;
 			for (let i = 0; i < 3; ++i) {
 				total += replaceHomeVideo(homeVideos[i].videoId, injectionSource[i]);
+				idsReplaced.push(homeVideos[i].videoId);
 			}
 
 			return total === 3;
 		};
 
 		while (!replace()) {
-			log('not all links replaced yet, waiting 1 second');
+			log('not all links replaced yet, waiting for 1 second');
 			// eslint-disable-next-line no-await-in-loop
 			await new Promise(resolve => {
 				setTimeout(resolve, 1000);
 			});
+		}
+
+		const miniatures = Array.from(document.querySelectorAll('#content.ytd-rich-item-renderer'));
+
+		const isReplaced = (miniature: Element): boolean => {
+			for (const id of idsReplaced) {
+				const a = miniature.querySelector(`a[href^="/watch?v=${id}"]`);
+				if (a) {
+					return true;
+				}
+			}
+
+			return false;
+		};
+
+		for (const miniature of miniatures) {
+			if (isReplaced(miniature)) {
+				continue;
+			}
+
+			trackClicks(miniature as HTMLElement);
 		}
 	} catch (error) {
 		console.error('Could not parse ytInitialData JSON on home page.');
@@ -256,7 +314,11 @@ const observer = new MutationObserver(() => {
 		}
 
 		if (isOnHomePage()) {
-			void onVisitHomePage();
+			if (!homePageChanged) {
+				void onVisitHomePageFirstTime().then(() => {
+					homePageChanged = true;
+				});
+			}
 		}
 
 		// Update the previous URL AFTER saving the watch time
