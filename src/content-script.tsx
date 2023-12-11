@@ -175,6 +175,7 @@ const findHighestSingleParent = (elt: HTMLElement): HTMLElement => {
 	return elt;
 };
 
+/* KO
 const trackClicks = (elt: HTMLElement) => {
 	const trap = findHighestSingleParent(elt);
 	log('click listener on miniature', elt, 'using', trap);
@@ -199,17 +200,15 @@ const trackClicks = (elt: HTMLElement) => {
 		};
 	}
 };
+*/
 
 const homeVideos: Recommendation[] = [];
 let injectionSource: Recommendation[] | undefined;
 
-const onVisitHomePageFirstTime = async () => {
-	log('onVisitHomePage');
-	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
-	injectionSource = await fetchRecommendationsToInject(recommendationsSource);
-
+const _findInitialDataScript = (): HTMLScriptElement | undefined => {
 	const scripts = Array.from(document.querySelectorAll('script'));
-	const script = scripts.find(script => {
+
+	const s = scripts.find(script => {
 		const {textContent} = script;
 
 		if (textContent) {
@@ -218,6 +217,40 @@ const onVisitHomePageFirstTime = async () => {
 
 		return false;
 	});
+
+	return s;
+};
+
+const findInitialDataScript = async (): Promise<HTMLScriptElement | undefined> =>
+	new Promise(resolve => {
+		const s = _findInitialDataScript();
+
+		if (s) {
+			resolve(s);
+			return;
+		}
+
+		const observer = new MutationObserver(() => {
+			const s = _findInitialDataScript();
+
+			if (s) {
+				observer.disconnect();
+				resolve(s);
+			}
+		});
+
+		observer.observe(document.body, {
+			childList: true,
+			subtree: true,
+		});
+	});
+
+const onVisitHomePageFirstTime = async () => {
+	log('onVisitHomePage');
+	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
+	injectionSource = await fetchRecommendationsToInject(recommendationsSource);
+
+	const script = await findInitialDataScript();
 
 	if (!script) {
 		console.error('Could not find ytInitialData script on home page.');
@@ -241,6 +274,16 @@ const onVisitHomePageFirstTime = async () => {
 				homeVideos.push(recommendation);
 			}
 		});
+
+		const config = await api.getConfig();
+		if (config.kind === 'Failure') {
+			console.error('Could not get config:', config.message);
+			return;
+		}
+
+		if (config.value.arm === 'control') {
+			return;
+		}
 
 		const idsReplaced: string[] = [];
 
@@ -266,6 +309,7 @@ const onVisitHomePageFirstTime = async () => {
 			});
 		}
 
+		/* KO
 		const miniatures = Array.from(document.querySelectorAll('#content.ytd-rich-item-renderer'));
 
 		const isReplaced = (miniature: Element): boolean => {
@@ -286,6 +330,7 @@ const onVisitHomePageFirstTime = async () => {
 
 			trackClicks(miniature as HTMLElement);
 		}
+		*/
 	} catch (error) {
 		console.error('Could not parse ytInitialData JSON on home page.');
 		console.error(error);
