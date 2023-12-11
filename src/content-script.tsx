@@ -142,7 +142,6 @@ const replaceHomeVideo = (videoId: string, recommendation: Recommendation): 0 | 
 					...{
 						...recommendation,
 						onClick,
-						isForHomePage: true,
 					}} />
 			</ThemeProvider>
 		</React.StrictMode>
