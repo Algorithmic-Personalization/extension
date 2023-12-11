@@ -3,7 +3,7 @@ import {createRoot} from 'react-dom/client';
 
 import {ThemeProvider} from '@mui/material';
 
-import {isOnVideoPage, isVideoPage, isOnHomePage, log, extractHomeContent, type RecommendationCard} from './lib';
+import {isOnVideoPage, isVideoPage, isOnHomePage, log, extractHomeContent} from './lib';
 import fetchRecommendationsToInject from './fetchYtChannelRecommendations';
 import App from './App';
 import theme from './theme';
@@ -13,6 +13,7 @@ import HomeVideoCard from './components/HomeVideoCard';
 import {defaultApi as api, apiProvider as ApiProvider} from './apiProvider';
 
 import WatchTimeEvent from './common/models/watchTimeEvent';
+import HomeShownEvent from './common/models/homeShownEvent';
 import {type Recommendation} from './common/types/Recommendation';
 
 let root: HTMLElement | undefined;
@@ -199,10 +200,13 @@ const trackClicks = (elt: HTMLElement) => {
 	}
 };
 
+const homeVideos: Recommendation[] = [];
+let injectionSource: Recommendation[] | undefined;
+
 const onVisitHomePageFirstTime = async () => {
 	log('onVisitHomePage');
 	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
-	const injectionSource = await fetchRecommendationsToInject(recommendationsSource);
+	injectionSource = await fetchRecommendationsToInject(recommendationsSource);
 
 	const scripts = Array.from(document.querySelectorAll('script'));
 	const script = scripts.find(script => {
@@ -231,13 +235,20 @@ const onVisitHomePageFirstTime = async () => {
 		const initialData = JSON.parse(jsonText) as Record<string, unknown>;
 		const homeContent = extractHomeContent(initialData);
 
-		const homeVideos = homeContent.filter(item => item.type === 'recommendation').map(
-			item => (item as RecommendationCard).recommendation,
-		);
+		homeContent.forEach(item => {
+			if (item.type === 'recommendation') {
+				const {recommendation} = item;
+				homeVideos.push(recommendation);
+			}
+		});
 
 		const idsReplaced: string[] = [];
 
 		const replace = () => {
+			if (!injectionSource) {
+				return false;
+			}
+
 			let total = 0;
 			for (let i = 0; i < 3; ++i) {
 				total += replaceHomeVideo(homeVideos[i].videoId, injectionSource[i]);
@@ -281,7 +292,20 @@ const onVisitHomePageFirstTime = async () => {
 	}
 };
 
-const observer = new MutationObserver(() => {
+const onVisitHomePage = () => {
+	if (!injectionSource) {
+		return;
+	}
+
+	const e = new HomeShownEvent(
+		homeVideos,
+		injectionSource,
+	);
+
+	api.postEvent(e, true).catch(console.error);
+};
+
+const observer = new MutationObserver(async () => {
 	/* Was for investigating
 	const videoElements = Array.from(document.querySelectorAll('video'));
 	console.log('videoElements', videoElements);
@@ -315,10 +339,11 @@ const observer = new MutationObserver(() => {
 
 		if (isOnHomePage()) {
 			if (!homePageChanged) {
-				void onVisitHomePageFirstTime().then(() => {
-					homePageChanged = true;
-				});
+				await onVisitHomePageFirstTime();
+				homePageChanged = true;
 			}
+
+			onVisitHomePage();
 		}
 
 		// Update the previous URL AFTER saving the watch time
