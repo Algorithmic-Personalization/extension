@@ -152,8 +152,22 @@ const replaceHomeVideo = (videoId: string, recommendation: Recommendation): 0 | 
 	return 1;
 };
 
+let homeLinkChanged = false;
+if (!homeLinkChanged) {
+	const el = document.querySelector('yt-icon#logo-icon');
+	log('home link elt', el);
+
+	el?.addEventListener('click', e => {
+		log('home link clicked');
+		homeLinkChanged = false;
+		e.preventDefault();
+		window.location.href = 'https://www.youtube.com/';
+	});
+}
+
 const onVisitHomePage = async () => {
 	log('onVisitHomePage');
+
 	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
 	const injectionSource = await fetchRecommendationsToInject(recommendationsSource);
 
