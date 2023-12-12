@@ -18,6 +18,7 @@ import {type Recommendation} from './common/types/Recommendation';
 
 let root: HTMLElement | undefined;
 let previousUrl: string | undefined;
+const idsReplaced = new Set<string>();
 
 if (api.getSession() === undefined) {
 	api.newSession().catch(e => {
@@ -246,7 +247,7 @@ const findInitialDataScript = async (): Promise<HTMLScriptElement | undefined> =
 	});
 
 const onVisitHomePageFirstTime = async () => {
-	log('onVisitHomePage');
+	log('onVisitHomePageFirstTime');
 	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
 	injectionSource = await fetchRecommendationsToInject(recommendationsSource);
 
@@ -285,8 +286,6 @@ const onVisitHomePageFirstTime = async () => {
 			return;
 		}
 
-		const idsReplaced: string[] = [];
-
 		const replace = () => {
 			if (!injectionSource) {
 				return false;
@@ -294,8 +293,14 @@ const onVisitHomePageFirstTime = async () => {
 
 			let total = 0;
 			for (let i = 0; i < 3; ++i) {
-				total += replaceHomeVideo(homeVideos[i].videoId, injectionSource[i]);
-				idsReplaced.push(homeVideos[i].videoId);
+				const {videoId} = homeVideos[i];
+				if (idsReplaced.has(videoId)) {
+					total += 1;
+					continue;
+				}
+
+				total += replaceHomeVideo(videoId, injectionSource[i]);
+				idsReplaced.add(homeVideos[i].videoId);
 			}
 
 			return total === 3;
@@ -350,6 +355,9 @@ const onVisitHomePage = () => {
 	api.postEvent(e, true).catch(console.error);
 };
 
+const urlChanged = (): boolean =>
+	window.location.href !== previousUrl;
+
 const observer = new MutationObserver(async () => {
 	/* Was for investigating
 	const videoElements = Array.from(document.querySelectorAll('video'));
@@ -370,7 +378,7 @@ const observer = new MutationObserver(async () => {
 	}
 	*/
 
-	if (window.location.href !== previousUrl) {
+	if (urlChanged()) {
 		if (isVideoPage(previousUrl)) {
 			attemptToSaveWatchTime(previousUrl);
 		}
@@ -384,8 +392,8 @@ const observer = new MutationObserver(async () => {
 
 		if (isOnHomePage()) {
 			if (!homePageChanged) {
-				await onVisitHomePageFirstTime();
 				homePageChanged = true;
+				onVisitHomePageFirstTime().catch(log);
 			}
 
 			onVisitHomePage();
