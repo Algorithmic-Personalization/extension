@@ -150,17 +150,21 @@ const extractFromArray = (array: Array<Record<string, unknown>>): HomeCard[] => 
 				homeThings.push(playlist);
 			}
 		} else if (has('richSectionRenderer')(thing)) {
-			const shelf = get(['richSectionRenderer', 'content', 'richShelfRenderer', 'contents'])(thing);
+			try {
+				const shelf = get(['richSectionRenderer', 'content', 'richShelfRenderer', 'contents'])(thing);
 
-			if (!Array.isArray(shelf)) {
-				throw new Error('Expected shelf to be an array');
+				if (!Array.isArray(shelf)) {
+					throw new Error('Expected shelf to be an array');
+				}
+
+				const nested = extractFromArray(shelf);
+				homeThings.push({
+					type: 'nested',
+					cards: nested,
+				});
+			} catch (error) {
+				console.log('OOPS: not parsing', thing, error);
 			}
-
-			const nested = extractFromArray(shelf);
-			homeThings.push({
-				type: 'nested',
-				cards: nested,
-			});
 		} else if (has('continuationItemRenderer')(thing)) {
 			log('ignored thing', thing);
 		} else {

@@ -337,7 +337,6 @@ const onVisitHomePageFirstTime = async () => {
 		}
 		*/
 	} catch (error) {
-		console.error('Could not parse ytInitialData JSON on home page.');
 		console.error(error);
 	}
 };
