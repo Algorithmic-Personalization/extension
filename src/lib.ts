@@ -10,7 +10,9 @@ export const isOnHomePage = () => window.location.pathname === '/';
 export const debug = process.env.NODE_ENV === 'development';
 
 export const log = (...args: any[]) => {
-	if (!debug) {
+	const isDebug = debug ?? localStorage.getItem('debug') === '1';
+
+	if (!isDebug) {
 		return;
 	}
 

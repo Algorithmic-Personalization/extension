@@ -351,6 +351,8 @@ const onVisitHomePage = () => {
 		injectionSource,
 	);
 
+	log('onVisitHomePage', e);
+
 	api.postEvent(e, true).catch(console.error);
 };
 
@@ -392,7 +394,7 @@ const observer = new MutationObserver(async () => {
 		if (isOnHomePage()) {
 			if (!homePageChanged) {
 				homePageChanged = true;
-				onVisitHomePageFirstTime().catch(log);
+				await onVisitHomePageFirstTime().catch(log);
 			}
 
 			onVisitHomePage();
