@@ -3,7 +3,7 @@ import {createRoot} from 'react-dom/client';
 
 import {ThemeProvider} from '@mui/material';
 
-import {isOnVideoPage, isVideoPage, isOnHomePage, log, extractHomeContent} from './lib';
+import {isOnVideoPage, isVideoPage, isOnHomePage, log, extractRecommendations} from './lib';
 import fetchRecommendationsToInject from './fetchYtChannelRecommendations';
 import App from './App';
 import theme from './theme';
@@ -204,7 +204,7 @@ const trackClicks = (elt: HTMLElement) => {
 */
 
 const homeVideos: Recommendation[] = [];
-let injectionSource: Recommendation[] | undefined;
+const injectionSource: Recommendation[] = [];
 
 const _findInitialDataScript = (): HTMLScriptElement | undefined => {
 	const scripts = Array.from(document.querySelectorAll('script'));
@@ -249,7 +249,11 @@ const findInitialDataScript = async (): Promise<HTMLScriptElement | undefined> =
 const onVisitHomePageFirstTime = async () => {
 	log('onVisitHomePageFirstTime');
 	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
-	injectionSource = await fetchRecommendationsToInject(recommendationsSource);
+	injectionSource.splice(
+		0,
+		injectionSource.length,
+		...await fetchRecommendationsToInject(recommendationsSource),
+	);
 
 	const script = await findInitialDataScript();
 
@@ -267,14 +271,9 @@ const onVisitHomePageFirstTime = async () => {
 
 	try {
 		const initialData = JSON.parse(jsonText) as Record<string, unknown>;
-		const homeContent = extractHomeContent(initialData);
-
-		homeContent.forEach(item => {
-			if (item.type === 'recommendation') {
-				const {recommendation} = item;
-				homeVideos.push(recommendation);
-			}
-		});
+		const homeContent = extractRecommendations(initialData);
+		log('homeContent', homeContent);
+		homeVideos.splice(0, homeVideos.length, ...homeContent);
 
 		const config = await api.getConfig();
 		if (config.kind === 'Failure') {
@@ -287,7 +286,7 @@ const onVisitHomePageFirstTime = async () => {
 		}
 
 		const replace = () => {
-			if (!injectionSource) {
+			if (injectionSource.length < 3) {
 				return false;
 			}
 

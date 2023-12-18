@@ -1,5 +1,5 @@
 import type Recommendation from './common/types/Recommendation';
-import {has, get} from './common/util';
+import {get} from './common/util';
 
 export const isOnVideoPage = () => window.location.pathname === '/watch';
 export const isVideoPage = (url?: string): url is string => Boolean(
@@ -46,46 +46,35 @@ export const extractYtInitialData = (rawPageHtml: string) => {
 	});
 };
 
-export type HomeCard = RecommendationCard | ReelCard | Playlist | NestedHomeCard;
+type TreeCallback = (node: unknown, path: string[]) => 'recurse' | 'stop';
 
-export type NestedHomeCard = {
-	type: 'nested';
-	cards: HomeCard[];
+export const walkTree = (cb: TreeCallback) => (node: unknown) => {
+	const walk = (node: unknown, path: string[]) => {
+		cb(node, path);
+
+		if (typeof node === 'object' && node !== null) {
+			for (const [key, value] of Object.entries(node)) {
+				walk(value, [...path, key]);
+			}
+		}
+	};
+
+	walk(node, []);
 };
 
-export type ReelCard = {
-	type: 'reel';
-	reel: Reel;
-};
+export const extractRecommendations = (initialData: Record<string, unknown>): Recommendation[] => {
+	const recommendations: Recommendation[] = [];
 
-export type Reel = {
-	videoId: string;
-	videoType: string;
-	headline: string;
-	miniatureUrl: string;
-	views: string;
-};
+	const cb: TreeCallback = (node, path) => {
+		if (path.length === 0) {
+			return 'stop';
+		}
 
-type Playlist = {
-	type: 'playlist';
-	playlistId: string;
-};
+		const lastKey = path[path.length - 1];
 
-export type RecommendationCard = {
-	type: 'recommendation';
-	recommendation: Recommendation;
-};
-
-const extractFromArray = (array: Array<Record<string, unknown>>): HomeCard[] => {
-	const homeThings: HomeCard[] = [];
-
-	for (const thing of array) {
-		if (has('richItemRenderer')(thing)) {
-			const preVideoData = get(['richItemRenderer', 'content'])(thing);
-
-			if (has('videoRenderer')(preVideoData)) {
-				const videoData = get(['videoRenderer'])(preVideoData);
-				const videoId = get(['videoId'])(videoData) as string;
+		if (lastKey === 'videoRenderer') {
+			try {
+				const videoId = get(['videoId'])(node) as string;
 
 				const channelMiniatureUrl = get([
 					'channelThumbnailSupportedRenderers',
@@ -94,7 +83,7 @@ const extractFromArray = (array: Array<Record<string, unknown>>): HomeCard[] => 
 					'thumbnails',
 					'0',
 					'url',
-				])(videoData) as string;
+				])(node) as string;
 
 				const channelShortName = get([
 					'ownerText',
@@ -103,97 +92,33 @@ const extractFromArray = (array: Array<Record<string, unknown>>): HomeCard[] => 
 					'navigationEndpoint',
 					'browseEndpoint',
 					'canonicalBaseUrl',
-				])(videoData) as string;
+				])(node) as string;
 
 				const recommendation: Recommendation = {
 					videoId,
-					title: get(['title', 'runs', '0', 'text'])(videoData) as string,
+					title: get(['title', 'runs', '0', 'text'])(node) as string,
 					url: `https://www.youtube.com/watch?v=${videoId}`,
-					channelName: get(['longBylineText', 'runs', '0', 'text'])(videoData) as string,
-					views: get(['shortViewCountText', 'simpleText'])(videoData) as string,
-					publishedSince: get(['publishedTimeText', 'simpleText'])(videoData) as string,
+					channelName: get(['longBylineText', 'runs', '0', 'text'])(node) as string,
+					views: get(['shortViewCountText', 'simpleText'])(node) as string,
+					publishedSince: get(['publishedTimeText', 'simpleText'])(node) as string,
 					miniatureUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
 					personalization: 'personalized',
 					channelMiniatureUrl,
 					channelShortName,
 				};
 
-				const homeThing: RecommendationCard = {
-					type: 'recommendation',
-					recommendation,
-				};
+				recommendations.push(recommendation);
 
-				homeThings.push(homeThing);
-			} else if (has('reelItemRenderer')(preVideoData)) {
-				const videoId = get(['reelItemRenderer', 'videoId'])(preVideoData) as string;
-
-				const reel: Reel = {
-					videoId,
-					videoType: get(['reelItemRenderer', 'videoType'])(preVideoData) as string,
-					headline: get(['reelItemRenderer', 'headline', 'simpleText'])(preVideoData) as string,
-					miniatureUrl: get(['reelItemRenderer', 'thumbnail', 'thumbnails', '0', 'url'])(preVideoData) as string,
-					views: get(['reelItemRenderer', 'viewCountText', 'simpleText'])(preVideoData) as string,
-				};
-
-				const reelCard: ReelCard = {
-					type: 'reel',
-					reel,
-				};
-
-				homeThings.push(reelCard);
-			} else if (has('playlistRenderer')(preVideoData)) {
-				const playlistId = get(['playlistRenderer', 'playlistId'])(preVideoData) as string;
-
-				const playlist: Playlist = {
-					type: 'playlist',
-					playlistId,
-				};
-
-				homeThings.push(playlist);
-			}
-		} else if (has('richSectionRenderer')(thing)) {
-			try {
-				const shelf = get(['richSectionRenderer', 'content', 'richShelfRenderer', 'contents'])(thing);
-
-				if (!Array.isArray(shelf)) {
-					throw new Error('Expected shelf to be an array');
-				}
-
-				const nested = extractFromArray(shelf);
-				homeThings.push({
-					type: 'nested',
-					cards: nested,
-				});
+				return 'stop';
 			} catch (error) {
-				console.log('OOPS: not parsing', thing, error);
+				log('error parsing videoRenderer', {path, node, error});
 			}
-		} else if (has('continuationItemRenderer')(thing)) {
-			log('ignored thing', thing);
-		} else {
-			log('!!! unknown thing', thing);
 		}
-	}
 
-	return homeThings;
-};
+		return 'recurse';
+	};
 
-export const extractHomeContent = (initialData: Record<string, unknown>): HomeCard[] => {
-	const pathToData = [
-		'contents',
-		'twoColumnBrowseResultsRenderer',
-		'tabs',
-		'0',
-		'tabRenderer',
-		'content',
-		'richGridRenderer',
-		'contents',
-	];
+	walkTree(cb)(initialData);
 
-	const contents = get(pathToData)(initialData);
-
-	if (!Array.isArray(contents)) {
-		throw new Error('Expected contents to be an array');
-	}
-
-	return extractFromArray(contents);
+	return recommendations;
 };
