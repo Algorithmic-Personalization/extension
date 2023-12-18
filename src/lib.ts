@@ -94,6 +94,21 @@ export const extractRecommendations = (initialData: Record<string, unknown>): Re
 					'canonicalBaseUrl',
 				])(node) as string;
 
+				const getHoverAnimationUrl = () => {
+					try {
+						return get([
+							'richThumbnail',
+							'movingThumbnailRenderer',
+							'movingThumbnailDetails',
+							'thumbnails',
+							'0',
+							'url',
+						])(node) as string;
+					} catch {
+						return undefined;
+					}
+				};
+
 				const recommendation: Recommendation = {
 					videoId,
 					title: get(['title', 'runs', '0', 'text'])(node) as string,
@@ -105,6 +120,7 @@ export const extractRecommendations = (initialData: Record<string, unknown>): Re
 					personalization: 'personalized',
 					channelMiniatureUrl,
 					channelShortName,
+					hoverAnimationUrl: getHoverAnimationUrl(),
 				};
 
 				recommendations.push(recommendation);

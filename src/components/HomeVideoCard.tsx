@@ -15,7 +15,7 @@ export const HomeVideoCard: React.FC<Recommendation & {onClick: () => Promise<vo
 }) => {
 	const [isHovering, setHovering] = useState(false);
 
-	const mediaLink = isHovering
+	const mediaLink = isHovering && hoverAnimationUrl
 		? hoverAnimationUrl
 		: `https://i.ytimg.com/vi/${videoId}/hq720.jpg`;
 
