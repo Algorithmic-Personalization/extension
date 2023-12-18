@@ -176,33 +176,6 @@ const findHighestSingleParent = (elt: HTMLElement): HTMLElement => {
 	return elt;
 };
 
-/* KO
-const trackClicks = (elt: HTMLElement) => {
-	const trap = findHighestSingleParent(elt);
-	log('click listener on miniature', elt, 'using', trap);
-
-	trap.addEventListener('click', e => {
-		e.preventDefault();
-		e.stopPropagation();
-		e.stopImmediatePropagation();
-
-		log('captured a click on a miniature', elt);
-	}, {capture: true});
-
-	const links = Array.from(trap.querySelectorAll('a'));
-
-	for (const link of links) {
-		link.onclick = e => {
-			e.preventDefault();
-			e.stopPropagation();
-			e.stopImmediatePropagation();
-
-			log('prevented a click on a link', link);
-		};
-	}
-};
-*/
-
 const homeVideos: Recommendation[] = [];
 const injectionSource: Recommendation[] = [];
 
@@ -312,29 +285,6 @@ const onVisitHomePageFirstTime = async () => {
 				setTimeout(resolve, 1000);
 			});
 		}
-
-		/* KO
-		const miniatures = Array.from(document.querySelectorAll('#content.ytd-rich-item-renderer'));
-
-		const isReplaced = (miniature: Element): boolean => {
-			for (const id of idsReplaced) {
-				const a = miniature.querySelector(`a[href^="/watch?v=${id}"]`);
-				if (a) {
-					return true;
-				}
-			}
-
-			return false;
-		};
-
-		for (const miniature of miniatures) {
-			if (isReplaced(miniature)) {
-				continue;
-			}
-
-			trackClicks(miniature as HTMLElement);
-		}
-		*/
 	} catch (error) {
 		console.error(error);
 	}
@@ -359,25 +309,6 @@ const urlChanged = (): boolean =>
 	window.location.href !== previousUrl;
 
 const observer = new MutationObserver(async () => {
-	/* Was for investigating
-	const videoElements = Array.from(document.querySelectorAll('video'));
-	console.log('videoElements', videoElements);
-	for (const vid of videoElements) {
-		const {currentSrc} = vid;
-		if (currentSrc) {
-			const last = currentSrc.split('/').pop();
-
-			if (last) {
-				console.log('currentSrc', currentSrc);
-				const found = jsonData?.includes(last);
-				console.log('found', found);
-			} else {
-				console.log('currentSrc not found in json');
-			}
-		}
-	}
-	*/
-
 	if (urlChanged()) {
 		if (isVideoPage(previousUrl)) {
 			attemptToSaveWatchTime(previousUrl);
