@@ -296,8 +296,8 @@ const onVisitHomePage = () => {
 	}
 
 	const e = new HomeShownEvent(
-		homeVideos,
-		injectionSource,
+		homeVideos.slice(10),
+		injectionSource.slice(10),
 	);
 
 	log('onVisitHomePage', e);
