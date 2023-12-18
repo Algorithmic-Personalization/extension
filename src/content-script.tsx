@@ -296,8 +296,8 @@ const onVisitHomePage = () => {
 	}
 
 	const e = new HomeShownEvent(
-		homeVideos.slice(10),
-		injectionSource.slice(10),
+		homeVideos.slice(0, 10),
+		injectionSource.slice(0, 10),
 	);
 
 	log('onVisitHomePage', e);
@@ -321,6 +321,9 @@ const observer = new MutationObserver(async () => {
 			watchVideoEvents();
 		}
 
+		// Update the previous URL AFTER saving the watch time
+		previousUrl = window.location.href;
+
 		if (isOnHomePage()) {
 			if (!homePageChanged) {
 				homePageChanged = true;
@@ -329,9 +332,6 @@ const observer = new MutationObserver(async () => {
 
 			onVisitHomePage();
 		}
-
-		// Update the previous URL AFTER saving the watch time
-		previousUrl = window.location.href;
 
 		api.sendPageView();
 	}
