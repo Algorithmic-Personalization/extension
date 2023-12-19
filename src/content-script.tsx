@@ -295,6 +295,11 @@ const onVisitHomePage = () => {
 		return;
 	}
 
+	log('videos extracted', {
+		homeVideos,
+		injectionSource,
+	});
+
 	const e = new HomeShownEvent(
 		homeVideos.slice(0, 10),
 		injectionSource.slice(0, 10),

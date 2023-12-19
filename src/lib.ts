@@ -46,7 +46,7 @@ export const extractYtInitialData = (rawPageHtml: string) => {
 	});
 };
 
-type TreeCallback = (node: unknown, path: string[]) => 'recurse' | 'stop';
+export type TreeCallback = (node: unknown, path: string[]) => 'recurse' | 'stop';
 
 export const walkTree = (cb: TreeCallback) => (node: unknown) => {
 	const walk = (node: unknown, path: string[]) => {
@@ -74,6 +74,8 @@ export const extractRecommendations = (initialData: Record<string, unknown>): Re
 
 		if (lastKey === 'videoRenderer') {
 			try {
+				log('found videoRenderer', {path, node});
+
 				const videoId = get(['videoId'])(node) as string;
 
 				const channelMiniatureUrl = get([
