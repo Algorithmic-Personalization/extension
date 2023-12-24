@@ -55,7 +55,19 @@ export const walkTree = (cb: TreeCallback) => (node: unknown) => {
 			return;
 		}
 
-		if (typeof node === 'object' && node !== null) {
+		if (node === null) {
+			return;
+		}
+
+		if (Array.isArray(node)) {
+			for (const [index, value] of node.entries()) {
+				walk(value, [...path, index.toString()]);
+			}
+
+			return;
+		}
+
+		if (typeof node === 'object') {
 			for (const [key, value] of Object.entries(node)) {
 				walk(value, [...path, key]);
 			}
