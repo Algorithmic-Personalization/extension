@@ -8,11 +8,10 @@ export const isVideoPage = (url?: string): url is string => Boolean(
 export const isOnHomePage = () => window.location.pathname === '/';
 
 export const debug = process.env.NODE_ENV === 'development';
+export const isDebug = () => debug || localStorage.getItem('debug') === '1';
 
 export const log = (...args: any[]) => {
-	const isDebug = debug ?? localStorage.getItem('debug') === '1';
-
-	if (!isDebug) {
+	if (!isDebug()) {
 		return;
 	}
 
@@ -66,7 +65,9 @@ export const walkTree = (cb: TreeCallback) => (node: unknown) => {
 	walk(node, []);
 };
 
-export const extractRecommendations = (initialData: Record<string, unknown>): Recommendation[] => {
+export const extractRecommendations = (
+	initialData: Record<string, unknown>,
+): Recommendation[] => {
 	const recommendations: Recommendation[] = [];
 
 	const cb: TreeCallback = (node, path) => {
@@ -78,7 +79,9 @@ export const extractRecommendations = (initialData: Record<string, unknown>): Re
 
 		if (lastKey === 'videoRenderer') {
 			try {
-				log('found videoRenderer', {path, node});
+				const title = get(['title', 'runs', '0', 'text'])(node) as string;
+
+				log('found videoRenderer', {path, node, title});
 
 				const videoId = get(['videoId'])(node) as string;
 
@@ -117,7 +120,7 @@ export const extractRecommendations = (initialData: Record<string, unknown>): Re
 
 				const recommendation: Recommendation = {
 					videoId,
-					title: get(['title', 'runs', '0', 'text'])(node) as string,
+					title,
 					url: `https://www.youtube.com/watch?v=${videoId}`,
 					channelName: get(['longBylineText', 'runs', '0', 'text'])(node) as string,
 					views: get(['shortViewCountText', 'simpleText'])(node) as string,

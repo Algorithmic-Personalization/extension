@@ -222,6 +222,7 @@ const findInitialDataScript = async (): Promise<HTMLScriptElement | undefined> =
 const onVisitHomePageFirstTime = async () => {
 	log('onVisitHomePageFirstTime');
 	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
+	log('getting the recommendations to inject...');
 	injectionSource.splice(
 		0,
 		injectionSource.length,
@@ -244,8 +245,9 @@ const onVisitHomePageFirstTime = async () => {
 
 	try {
 		const initialData = JSON.parse(jsonText) as Record<string, unknown>;
+		log('extracting recommendations from home JSON...');
 		const homeContent = extractRecommendations(initialData);
-		log('homeContent', homeContent);
+		log('default home content', homeContent);
 		homeVideos.splice(0, homeVideos.length, ...homeContent);
 
 		const config = await api.getConfig();
@@ -295,7 +297,7 @@ const onVisitHomePage = () => {
 		return;
 	}
 
-	log('videos extracted', {
+	log('all videos extracted', {
 		homeVideos,
 		injectionSource,
 	});
