@@ -50,7 +50,11 @@ export type TreeCallback = (node: unknown, path: string[]) => 'recurse' | 'stop'
 
 export const walkTree = (cb: TreeCallback) => (node: unknown) => {
 	const walk = (node: unknown, path: string[]) => {
-		cb(node, path);
+		const andThen = cb(node, path);
+
+		if (andThen === 'stop') {
+			return;
+		}
 
 		if (typeof node === 'object' && node !== null) {
 			for (const [key, value] of Object.entries(node)) {

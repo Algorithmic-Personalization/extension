@@ -50,4 +50,45 @@ describe('walkTree', () => {
 		expect(actualPaths).toEqual(expectedPaths);
 		expect(actualLeaves).toEqual(expectedLeaves);
 	});
+
+	it('should ignore specified nodes', () => {
+		const tree = {
+			a: {
+				b: [1, 2],
+				c: [3, 4],
+			},
+			x: {
+				y: [5, 6],
+				z: [7, 8],
+			},
+		};
+
+		const expectedPaths: string[][] = [
+			[],
+			['a'],
+			['x'],
+			['x', 'y'],
+			['x', 'y', '0'],
+			['x', 'y', '1'],
+			['x', 'z'],
+			['x', 'z', '0'],
+			['x', 'z', '1'],
+		];
+
+		const actualPaths: string[][] = [];
+
+		const cb: TreeCallback = (_node, path) => {
+			actualPaths.push(path);
+
+			if (path[path.length - 1] === 'a') {
+				return 'stop';
+			}
+
+			return 'recurse';
+		};
+
+		walkTree(cb)(tree);
+
+		expect(actualPaths).toEqual(expectedPaths);
+	});
 });
