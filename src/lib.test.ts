@@ -13,6 +13,9 @@ describe('walkTree', () => {
 			},
 		};
 
+		const expectedLeaves: number[] = [1, 2, 3, 4, 5, 6, 7, 8];
+		const actualLeaves: number[] = [];
+
 		const expectedPaths: string[][] = [
 			[],
 			['a'],
@@ -33,13 +36,18 @@ describe('walkTree', () => {
 
 		const actualPaths: string[][] = [];
 
-		const cb: TreeCallback = (_node, path) => {
+		const cb: TreeCallback = (node, path) => {
 			actualPaths.push(path);
+			if (path.length === 3) {
+				actualLeaves.push(node as number);
+			}
+
 			return 'recurse';
 		};
 
 		walkTree(cb)(tree);
 
 		expect(actualPaths).toEqual(expectedPaths);
+		expect(actualLeaves).toEqual(expectedLeaves);
 	});
 });
