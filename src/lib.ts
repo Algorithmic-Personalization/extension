@@ -70,6 +70,10 @@ export const extractRecommendations = (initialData: Record<string, unknown>): Re
 	const recommendations: Recommendation[] = [];
 
 	const cb: TreeCallback = (node, path) => {
+		if (path.length === 0) {
+			return 'recurse';
+		}
+
 		const lastKey = path[path.length - 1];
 
 		if (lastKey === 'videoRenderer') {
