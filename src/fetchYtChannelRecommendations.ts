@@ -1,8 +1,6 @@
-import type Recommendation from './common/types/Recommendation';
+import {extractYtInitialData, extractRecommendations, type ChannelRecommendation} from './lib';
 
-import {extractYtInitialData, extractRecommendations} from './lib';
-
-export const fetchYtChannelRecommendations = async (channelId: string): Promise<Recommendation[]> => {
+export const fetchYtChannelRecommendations = async (channelId: string): Promise<ChannelRecommendation[]> => {
 	const channelUrl = `https://www.youtube.com/channel/${channelId}`;
 
 	const html = await (await fetch(channelUrl, {

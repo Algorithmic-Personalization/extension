@@ -77,10 +77,16 @@ export const walkTree = (cb: TreeCallback) => (node: unknown) => {
 	walk(node, []);
 };
 
+export type ChannelRecommendation = {
+	path: string[];
+	recommendation: Recommendation;
+	rawNode: unknown;
+};
+
 export const extractRecommendations = (
 	initialData: Record<string, unknown>,
-): Recommendation[] => {
-	const recommendations: Recommendation[] = [];
+): ChannelRecommendation[] => {
+	const recommendations: ChannelRecommendation[] = [];
 
 	const cb: TreeCallback = (node, path) => {
 		if (path.length === 0) {
@@ -144,7 +150,11 @@ export const extractRecommendations = (
 					hoverAnimationUrl: getHoverAnimationUrl(),
 				};
 
-				recommendations.push(recommendation);
+				recommendations.push({
+					path,
+					recommendation,
+					rawNode: node,
+				});
 
 				return 'stop';
 			} catch (error) {

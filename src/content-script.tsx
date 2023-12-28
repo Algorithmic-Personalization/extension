@@ -226,7 +226,7 @@ const onVisitHomePageFirstTime = async () => {
 	injectionSource.splice(
 		0,
 		injectionSource.length,
-		...await fetchRecommendationsToInject(recommendationsSource),
+		...(await fetchRecommendationsToInject(recommendationsSource)).map(({recommendation}) => recommendation),
 	);
 
 	const script = await findInitialDataScript();
@@ -246,8 +246,12 @@ const onVisitHomePageFirstTime = async () => {
 	try {
 		const initialData = JSON.parse(jsonText) as Record<string, unknown>;
 		log('extracting recommendations from home JSON...');
-		const homeContent = extractRecommendations(initialData);
-		log('default home content', homeContent);
+		const preHomeContent = extractRecommendations(initialData);
+		log('home content before filtering', preHomeContent);
+		const homeContent = preHomeContent
+			.filter(r => r.path.length === 12)
+			.map(r => r.recommendation);
+		log('home content after filter', homeContent);
 		homeVideos.splice(0, homeVideos.length, ...homeContent);
 
 		const config = await api.getConfig();
