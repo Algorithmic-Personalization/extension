@@ -277,6 +277,8 @@ const onVisitHomePageFirstTime = async () => {
 		...(await fetchRecommendationsToInject(recommendationsSource)).map(({recommendation}) => recommendation),
 	);
 
+	log('injection source:', injectionSource);
+
 	const script = await findInitialDataScript();
 
 	if (!script) {
@@ -305,6 +307,7 @@ const onVisitHomePageFirstTime = async () => {
 		*/
 
 		homeVideos.splice(0, homeVideos.length, ...getHomeVideos());
+		log('home videos:', homeVideos);
 
 		const config = await api.getConfig();
 		if (config.kind === 'Failure') {
@@ -337,10 +340,9 @@ const onVisitHomePageFirstTime = async () => {
 		};
 
 		while (!replace()) {
-			log('not all links replaced yet, waiting for 1 second');
 			// eslint-disable-next-line no-await-in-loop
 			await new Promise(resolve => {
-				setTimeout(resolve, 1000);
+				setTimeout(resolve, 100);
 			});
 		}
 	} catch (error) {
@@ -359,7 +361,7 @@ const onVisitHomePage = () => {
 	});
 
 	const e = new HomeShownEvent(
-		homeVideos.slice(0, 10),
+		homeVideos.slice(0, 15),
 		injectionSource.slice(0, 10),
 	);
 

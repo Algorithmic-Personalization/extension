@@ -78,6 +78,7 @@ export const walkTree = (cb: TreeCallback) => (node: unknown) => {
 };
 
 export type ChannelRecommendation = {
+	title: string;
 	path: string[];
 	recommendation: Recommendation;
 	rawNode: unknown;
@@ -98,8 +99,6 @@ export const extractRecommendations = (
 		if (lastKey === 'videoRenderer') {
 			try {
 				const title = get(['title', 'runs', '0', 'text'])(node) as string;
-
-				log('found videoRenderer', {path, node, title});
 
 				const videoId = get(['videoId'])(node) as string;
 
@@ -136,6 +135,22 @@ export const extractRecommendations = (
 					}
 				};
 
+				const getMiniatureUrl = () => {
+					const defaultUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+
+					const thumbnails = get(['thumbnail', 'thumbnails'])(node) as Array<{url: string; width: number; height: number}>;
+
+					if (!thumbnails) {
+						return defaultUrl;
+					}
+
+					const sortedThumbnails = thumbnails.sort((a, b) => (b.width * b.height) - (a.width * a.height));
+
+					return sortedThumbnails[0].url;
+				};
+
+				const miniatureUrl = getMiniatureUrl();
+
 				const recommendation: Recommendation = {
 					videoId,
 					title,
@@ -143,7 +158,7 @@ export const extractRecommendations = (
 					channelName: get(['longBylineText', 'runs', '0', 'text'])(node) as string,
 					views: get(['shortViewCountText', 'simpleText'])(node) as string,
 					publishedSince: get(['publishedTimeText', 'simpleText'])(node) as string,
-					miniatureUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+					miniatureUrl,
 					personalization: 'personalized',
 					channelMiniatureUrl,
 					channelShortName,
@@ -151,6 +166,7 @@ export const extractRecommendations = (
 				};
 
 				recommendations.push({
+					title,
 					path,
 					recommendation,
 					rawNode: node,

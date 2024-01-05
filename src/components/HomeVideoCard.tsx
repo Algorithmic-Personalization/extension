@@ -3,13 +3,14 @@ import {Typography} from '@mui/material';
 
 import type Recommendation from '../common/types/Recommendation';
 
-export const HomeVideoCard: React.FC<Recommendation & {onClick: () => Promise<void>}> = ({
+export const HomeVideoCard: React.FC<Recommendation> = ({
 	videoId,
 	channelName,
 	title,
 	views,
 	publishedSince,
 	channelShortName,
+	miniatureUrl,
 	channelMiniatureUrl,
 	hoverAnimationUrl,
 }) => {
@@ -17,7 +18,7 @@ export const HomeVideoCard: React.FC<Recommendation & {onClick: () => Promise<vo
 
 	const mediaLink = isHovering && hoverAnimationUrl
 		? hoverAnimationUrl
-		: `https://i.ytimg.com/vi/${videoId}/hq720.jpg`;
+		: miniatureUrl;
 
 	const imgRef = useRef<HTMLImageElement>(null);
 
