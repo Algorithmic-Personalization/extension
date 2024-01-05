@@ -3,7 +3,7 @@ import {createRoot} from 'react-dom/client';
 
 import {ThemeProvider} from '@mui/material';
 
-import {isOnVideoPage, isVideoPage, isOnHomePage, log, extractRecommendations} from './lib';
+import {isOnVideoPage, isVideoPage, isOnHomePage, log/* D, extractRecommendations */} from './lib';
 import fetchRecommendationsToInject from './fetchYtChannelRecommendations';
 import App from './App';
 import theme from './theme';
@@ -107,6 +107,54 @@ const findParentById = (elId: string) => (elt: Element): Element | undefined => 
 	return undefined;
 };
 
+type HomeVideo = {
+	videoId: string;
+	title: string;
+	url: string;
+};
+
+const getVideoTitle = (node: HTMLElement): string | undefined => {
+	const maybeTitle = node.querySelector('#video-title');
+
+	if (maybeTitle) {
+		return maybeTitle.textContent?.trim();
+	}
+
+	if (node.parentElement && node.id !== 'content') {
+		return getVideoTitle(node.parentElement);
+	}
+
+	return undefined;
+};
+
+const getHomeVideos = (): HomeVideo[] => {
+	const links: HTMLAnchorElement[] = Array.from(document.querySelectorAll('a.ytd-thumbnail[href^="/watch?v="]'));
+	const maybeRes: Array<HomeVideo | undefined> = links.map(link => {
+		const videoExp = /\?v=(.+)$/;
+		const maybeMatch = videoExp.exec(link.href);
+
+		if (!maybeMatch) {
+			return undefined;
+		}
+
+		const videoId = maybeMatch[1];
+
+		const title = getVideoTitle(link);
+
+		if (!title) {
+			return undefined;
+		}
+
+		return {
+			videoId,
+			title,
+			url: link.href,
+		};
+	});
+
+	return maybeRes.filter(Boolean) as HomeVideo[];
+};
+
 const replaceHomeVideo = (videoId: string, recommendation: Recommendation): 0 | 1 => {
 	const links = Array.from(document.querySelectorAll(`a.ytd-thumbnail[href="/watch?v=${videoId}"]`));
 
@@ -176,7 +224,7 @@ const findHighestSingleParent = (elt: HTMLElement): HTMLElement => {
 	return elt;
 };
 
-const homeVideos: Recommendation[] = [];
+const homeVideos: HomeVideo[] = [];
 const injectionSource: Recommendation[] = [];
 
 const _findInitialDataScript = (): HTMLScriptElement | undefined => {
@@ -244,6 +292,7 @@ const onVisitHomePageFirstTime = async () => {
 	}
 
 	try {
+		/* Doesn't work, not in order
 		const initialData = JSON.parse(jsonText) as Record<string, unknown>;
 		log('extracting recommendations from home JSON...');
 		const preHomeContent = extractRecommendations(initialData);
@@ -253,6 +302,9 @@ const onVisitHomePageFirstTime = async () => {
 			.map(r => r.recommendation);
 		log('home content after filter', homeContent);
 		homeVideos.splice(0, homeVideos.length, ...homeContent);
+		*/
+
+		homeVideos.splice(0, homeVideos.length, ...getHomeVideos());
 
 		const config = await api.getConfig();
 		if (config.kind === 'Failure') {
