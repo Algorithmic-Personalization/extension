@@ -10,6 +10,10 @@ export const dedupe = removeDuplicates((r: Recommendation) => r.videoId);
 
 export const createRecommendationsList: RecommendationsListCreator = cfg =>
 	(nonPersonalized, personalized) => {
+		if (cfg.arm === 'control') {
+			return personalized;
+		}
+
 		const limit = Math.min(personalized.length, nonPersonalized.length);
 
 		const tmpResult: Recommendation[] = [];

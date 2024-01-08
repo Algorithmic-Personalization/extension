@@ -1,11 +1,15 @@
 import {extractYtInitialData, extractRecommendations, type ChannelRecommendation} from './lib';
 
-export const fetchYtChannelRecommendations = async (channelId: string): Promise<ChannelRecommendation[]> => {
-	const channelUrl = `https://www.youtube.com/channel/${channelId}`;
+export const fetchYtChannelRecommendations = async (source: string | {url: string}): Promise<ChannelRecommendation[]> => {
+	const channelUrl = typeof source === 'string'
+		? `https://www.youtube.com/channel/${source}`
+		: source.url;
 
 	const html = await (await fetch(channelUrl, {
 		credentials: 'include',
 	})).text();
+
+	console.log({html});
 
 	const initialDataScript = extractYtInitialData(html);
 

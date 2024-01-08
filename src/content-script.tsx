@@ -269,7 +269,7 @@ const findInitialDataScript = async (): Promise<HTMLScriptElement | undefined> =
 
 const onVisitHomePageFirstTime = async () => {
 	log('onVisitHomePageFirstTime');
-	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
+	const recommendationsSource = 'https://www.youtube.com/results?search_query=electronics';
 	log('getting the recommendations to inject...');
 	injectionSource.splice(
 		0,
