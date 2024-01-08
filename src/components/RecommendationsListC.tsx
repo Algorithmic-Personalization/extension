@@ -17,7 +17,7 @@ import {
 import RecommendationC from './RecommendationC';
 
 import {memoizeTemporarily, setPersonalizedFlags, retryOnError} from '../common/util';
-import {debug, log} from '../lib';
+import {isDebug, log} from '../lib';
 
 const memo = memoizeTemporarily(10000);
 const retry = retryOnError(2, 1000);
@@ -41,7 +41,7 @@ const Personalized = styled('span')(() => ({
 }));
 
 const Mixed = styled('span')(() => ({
-	color: 'black',
+	color: 'blue',
 }));
 
 const debugWrapper = (r: Recommendation) => {
@@ -203,7 +203,7 @@ export const RecommendationsListC: React.FC<{
 		<div>
 			{loading && (<p>Loading...</p>)}
 			{loaded && loadedUi}
-			{loaded && debug && debugUi}
+			{loaded && isDebug() && debugUi}
 		</div>
 	);
 };
