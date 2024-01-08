@@ -30,10 +30,13 @@ yarn
 ```
 
 ## Build the extension
+Create a configuration file and build.
 
-```
+```bash
+cp config.extension.dist.ts config.extension.ts
 yarn build
 ```
+Change the development server to your server's development URL.
 
 The extension will be output in the `dist` folder.
 
