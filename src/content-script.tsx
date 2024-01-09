@@ -3,12 +3,12 @@ import {createRoot} from 'react-dom/client';
 
 import {ThemeProvider} from '@mui/material';
 
-import {isOnVideoPage, isVideoPage, isOnHomePage, log/* D, extractRecommendations */} from './lib';
+import {isOnVideoPage, isVideoPage, isOnHomePage, log, urlExists} from './lib';
 import fetchRecommendationsToInject from './fetchYtChannelRecommendations';
 import App from './App';
 import theme from './theme';
 
-import HomeVideoCard from './components/HomeVideoCard';
+import HomeVideoCard, {getHomeMiniatureUrl} from './components/HomeVideoCard';
 
 import {defaultApi as api, apiProvider as ApiProvider} from './apiProvider';
 
@@ -276,11 +276,21 @@ const onVisitHomePageFirstTime = async () => {
 	log('onVisitHomePageFirstTime');
 	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
 	log('getting the recommendations to inject...');
-	injectionSource.splice(
-		0,
-		injectionSource.length,
-		...(await fetchRecommendationsToInject(recommendationsSource)).map(({recommendation}) => recommendation),
-	);
+	const rawInjectionSource = (await fetchRecommendationsToInject(recommendationsSource))
+		.map(({recommendation}) => recommendation).slice(0, 10);
+
+	const filterPromises = rawInjectionSource.map(async r => {
+		const exists = await urlExists(getHomeMiniatureUrl(r.videoId));
+		return {ok: exists, rec: r};
+	});
+
+	const filtered = await Promise.all(filterPromises);
+
+	for (const {ok, rec} of filtered) {
+		if (ok) {
+			injectionSource.push(rec);
+		}
+	}
 
 	log('injection source:', injectionSource);
 

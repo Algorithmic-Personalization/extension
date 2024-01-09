@@ -185,3 +185,11 @@ export const extractRecommendations = (
 
 	return recommendations;
 };
+
+export const urlExists = async (url: string): Promise<boolean> => {
+	const res = await fetch(url, {
+		method: 'HEAD',
+	});
+
+	return res.ok;
+};

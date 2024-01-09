@@ -2,6 +2,10 @@ import React, {useState, useRef, useEffect} from 'react';
 import {Typography} from '@mui/material';
 
 import type Recommendation from '../common/types/Recommendation';
+import {urlExists} from '../lib';
+
+export const getHomeMiniatureUrl = (videoId: string) =>
+	`https://i.ytimg.com/vi/${videoId}/hq720.jpg`;
 
 export const HomeVideoCard: React.FC<Recommendation & {
 	onClick: () => void;
@@ -22,7 +26,7 @@ export const HomeVideoCard: React.FC<Recommendation & {
 	const imgRef = useRef<HTMLImageElement>(null);
 
 	const candidateMiniatureUrls = [
-		`https://i.ytimg.com/vi/${videoId}/hq720.jpg`,
+		getHomeMiniatureUrl(videoId),
 		miniatureUrl,
 	];
 
@@ -34,11 +38,9 @@ export const HomeVideoCard: React.FC<Recommendation & {
 
 	useEffect(() => {
 		(async () => {
-			const res = await fetch(candidateMiniatureUrls[0], {
-				method: 'HEAD',
-			});
+			const picExists = await urlExists(candidateMiniatureUrls[0]);
 
-			if (!res.ok) {
+			if (!picExists) {
 				setPictureUrl(candidateMiniatureUrls[1]);
 			}
 		})().catch(console.error);
