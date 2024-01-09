@@ -274,7 +274,7 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 
 			const event = {
 				...inputEvent,
-				context: document.referrer,
+				context: inputEvent.context ?? document.referrer,
 			};
 
 			event.extensionVersion = packageJson.version;
