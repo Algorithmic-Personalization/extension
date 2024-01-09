@@ -3,7 +3,9 @@ import {Typography} from '@mui/material';
 
 import type Recommendation from '../common/types/Recommendation';
 
-export const HomeVideoCard: React.FC<Recommendation> = ({
+export const HomeVideoCard: React.FC<Recommendation & {
+	onClick: () => void;
+}> = ({
 	videoId,
 	channelName,
 	title,
@@ -13,6 +15,7 @@ export const HomeVideoCard: React.FC<Recommendation> = ({
 	miniatureUrl,
 	channelMiniatureUrl,
 	hoverAnimationUrl,
+	onClick,
 }) => {
 	const [isHovering, setHovering] = useState(false);
 
@@ -34,6 +37,7 @@ export const HomeVideoCard: React.FC<Recommendation> = ({
 		<div
 			id='thumbnail'
 			className='style-scope ytd-rich-grid-media'
+			onClick={onClick}
 		>
 			<div className='style-scope ytd-rich-grid-media'>
 				<a

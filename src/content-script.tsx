@@ -15,6 +15,7 @@ import {defaultApi as api, apiProvider as ApiProvider} from './apiProvider';
 import WatchTimeEvent from './common/models/watchTimeEvent';
 import HomeShownEvent from './common/models/homeShownEvent';
 import {type Recommendation} from './common/types/Recommendation';
+import {Event as AppEvent, EventType} from './common/models/event';
 
 let root: HTMLElement | undefined;
 let previousUrl: string | undefined;
@@ -182,7 +183,11 @@ const replaceHomeVideo = (videoId: string, recommendation: Recommendation): 0 | 
 	console.log('parent for', videoId, parent);
 
 	const onInjectedVideoCardClicked = async () => {
-		console.log('handleRecommendationClicked', recommendation);
+		const event = new AppEvent();
+		event.type = EventType.HOME_INJECTED_TILE_CLICKED;
+		event.url = recommendation.url;
+		event.context = window.location.href;
+		void api.postEvent(event, true).catch(log);
 	};
 
 	const card = (
