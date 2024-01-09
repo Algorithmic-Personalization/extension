@@ -232,46 +232,6 @@ const findHighestSingleParent = (elt: HTMLElement): HTMLElement => {
 const homeVideos: HomeVideo[] = [];
 const injectionSource: Recommendation[] = [];
 
-const _findInitialDataScript = (): HTMLScriptElement | undefined => {
-	const scripts = Array.from(document.querySelectorAll('script'));
-
-	const s = scripts.find(script => {
-		const {textContent} = script;
-
-		if (textContent) {
-			return textContent.trimStart().startsWith('var ytInitialData = ');
-		}
-
-		return false;
-	});
-
-	return s;
-};
-
-const findInitialDataScript = async (): Promise<HTMLScriptElement | undefined> =>
-	new Promise(resolve => {
-		const s = _findInitialDataScript();
-
-		if (s) {
-			resolve(s);
-			return;
-		}
-
-		const observer = new MutationObserver(() => {
-			const s = _findInitialDataScript();
-
-			if (s) {
-				observer.disconnect();
-				resolve(s);
-			}
-		});
-
-		observer.observe(document.body, {
-			childList: true,
-			subtree: true,
-		});
-	});
-
 const onVisitHomePageFirstTime = async () => {
 	log('onVisitHomePageFirstTime');
 	const recommendationsSource = 'UCYfdidRxbB8Qhf0Nx7ioOYw';
@@ -294,33 +254,7 @@ const onVisitHomePageFirstTime = async () => {
 
 	log('injection source:', injectionSource);
 
-	const script = await findInitialDataScript();
-
-	if (!script) {
-		console.error('Could not find ytInitialData script on home page.');
-		return;
-	}
-
-	const jsonText = script.textContent?.replace('var ytInitialData = ', '').replace(/;$/, '').trim();
-
-	if (!jsonText) {
-		console.error('Could not find ytInitialData JSON on home page.');
-		return;
-	}
-
 	try {
-		/* Doesn't work, not in order
-		const initialData = JSON.parse(jsonText) as Record<string, unknown>;
-		log('extracting recommendations from home JSON...');
-		const preHomeContent = extractRecommendations(initialData);
-		log('home content before filtering', preHomeContent);
-		const homeContent = preHomeContent
-			.filter(r => r.path.length === 12)
-			.map(r => r.recommendation);
-		log('home content after filter', homeContent);
-		homeVideos.splice(0, homeVideos.length, ...homeContent);
-		*/
-
 		homeVideos.splice(0, homeVideos.length, ...getHomeVideos());
 		log('home videos:', homeVideos);
 
