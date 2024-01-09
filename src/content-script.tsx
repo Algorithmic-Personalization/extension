@@ -274,7 +274,7 @@ const findInitialDataScript = async (): Promise<HTMLScriptElement | undefined> =
 
 const onVisitHomePageFirstTime = async () => {
 	log('onVisitHomePageFirstTime');
-	const recommendationsSource = 'UCtFRv9O2AHqOZjjynzrv-xg';
+	const recommendationsSource = 'UCYfdidRxbB8Qhf0Nx7ioOYw';
 	log('getting the recommendations to inject...');
 	const rawInjectionSource = (await fetchRecommendationsToInject(recommendationsSource))
 		.map(({recommendation}) => recommendation).slice(0, 10);
