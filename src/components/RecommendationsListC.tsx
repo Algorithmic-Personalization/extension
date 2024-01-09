@@ -18,6 +18,7 @@ import RecommendationC from './RecommendationC';
 
 import {memoizeTemporarily, setPersonalizedFlags, retryOnError} from '../common/util';
 import {isDebug, log} from '../lib';
+import {Typography} from '@mui/material';
 
 const memo = memoizeTemporarily(10000);
 const retry = retryOnError(2, 1000);
@@ -164,19 +165,19 @@ export const RecommendationsListC: React.FC<{
 
 	const debugUi = (
 		<div>
-			<h1>Debug view</h1>
+			<h1><Typography color='text.primary'>Debug view</Typography></h1>
 
-			<h2>Non-personalized recommendations</h2>
+			<h2><NonPersonalized>Non-personalized recommendations</NonPersonalized></h2>
 			<ul>{nonPersonalizedRecommendations.map(rec => (
-				<li key={rec.videoId}>{rec.title}</li>
+				<li key={rec.videoId}><NonPersonalized>{rec.title}</NonPersonalized></li>
 			))}</ul>
 
-			<h2>Personalized recommendations</h2>
+			<h2><Personalized>Personalized recommendations</Personalized></h2>
 			<ul>{defaultRecommendations.map(rec => (
-				<li key={rec.videoId}>{rec.title}</li>
+				<li key={rec.videoId}><Personalized>{rec.title}</Personalized></li>
 			))}</ul>
 
-			<h2>Final recommendations</h2>
+			<h2><Typography color='text.primary'>Final recommendations</Typography></h2>
 			<p>Arm: {cfg.arm}<br/></p>
 			<p><NonPersonalized>Non-personalized</NonPersonalized></p>
 			<p><Personalized>Personalized</Personalized></p>
