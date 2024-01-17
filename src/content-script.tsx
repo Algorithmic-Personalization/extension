@@ -232,6 +232,39 @@ const findHighestSingleParent = (elt: HTMLElement): HTMLElement => {
 const homeVideos: HomeVideo[] = [];
 const injectionSource: Recommendation[] = [];
 
+const getRecommendationsToInject = async (): Promise<Recommendation[]> => {
+	const getRecommendations = async (force = false): Promise<Recommendation[]> => {
+		log('getting recommendations source...');
+		const recommendationsSource = await api.getChannelSource(force);
+		log('trying to get the recommendations to inject from:', recommendationsSource);
+
+		const channelData = await fetchRecommendationsToInject(recommendationsSource);
+		log('raw injection source channel data:', channelData);
+
+		const unfilteredRecommendations = channelData.map(({recommendation}) => recommendation).slice(0, 10);
+		log('unfiltered recommendations:', unfilteredRecommendations);
+
+		const filterPromises = unfilteredRecommendations.map(async r => {
+			const exists = await urlExists(getHomeMiniatureUrl(r.videoId));
+			return {ok: exists, rec: r};
+		});
+
+		const filtered = await Promise.all(filterPromises);
+		log('filtered recommendations:', filtered);
+
+		return filtered.filter(({ok}) => ok).map(({rec}) => rec);
+	};
+
+	let recommendations = await getRecommendations();
+
+	while (recommendations.length < 3) {
+		// eslint-disable-next-line no-await-in-loop
+		recommendations = await getRecommendations(true);
+	}
+
+	return recommendations;
+};
+
 const onVisitHomePageFirstTime = async () => {
 	log('onVisitHomePageFirstTime');
 
@@ -246,34 +279,13 @@ const onVisitHomePageFirstTime = async () => {
 		return;
 	}
 
-	const recommendationsSource = await api.getChannelSource();
-	log('getting the recommendations to inject from:', recommendationsSource);
-	const channelData = await fetchRecommendationsToInject(recommendationsSource);
-	log('raw injection source channel data:', channelData);
+	const recommendationsToInject = await getRecommendationsToInject();
+	injectionSource.splice(0, injectionSource.length, ...recommendationsToInject);
 
-	const unfilteredRecommendations = channelData.map(({recommendation}) => recommendation).slice(0, 10);
-	log('unfiltered recommendations:', unfilteredRecommendations);
-
-	const filterPromises = unfilteredRecommendations.map(async r => {
-		const exists = await urlExists(getHomeMiniatureUrl(r.videoId));
-		return {ok: exists, rec: r};
-	});
-
-	const filtered = await Promise.all(filterPromises);
-	log('filtered recommendations:', filtered);
-
-	for (const {ok, rec} of filtered) {
-		if (ok) {
-			injectionSource.push(rec);
-		}
-	}
-
-	log('injection source:', injectionSource);
+	homeVideos.splice(0, homeVideos.length, ...getHomeVideos());
+	log('home videos:', homeVideos);
 
 	try {
-		homeVideos.splice(0, homeVideos.length, ...getHomeVideos());
-		log('home videos:', homeVideos);
-
 		const replace = () => {
 			if (injectionSource.length < 3) {
 				return false;

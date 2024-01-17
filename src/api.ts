@@ -28,7 +28,7 @@ export type Api = {
 	getConfig: () => Promise<Maybe<ParticipantConfig>>;
 	postEvent: (event: Event, storeForRetry: boolean) => Promise<boolean>;
 	getHeaders: () => Record<string, string>;
-	getChannelSource: () => Promise<string>;
+	getChannelSource: (force?: boolean) => Promise<string>;
 	logout(): void;
 };
 
@@ -339,8 +339,12 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 			tabIsActive = active;
 		},
 
-		async getChannelSource() {
-			const res = await get<ParticipantChannelSource>(getParticipantChannelSource, {}, headers());
+		async getChannelSource(force = false) {
+			const params = force
+				? {force: 'true'}
+				: {};
+
+			const res = await get<ParticipantChannelSource>(getParticipantChannelSource, params, headers());
 
 			if (res.kind !== 'Success') {
 				throw new Error(`Failed to get channel source: ${res.message}`);
