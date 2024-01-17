@@ -234,17 +234,33 @@ const injectionSource: Recommendation[] = [];
 
 const onVisitHomePageFirstTime = async () => {
 	log('onVisitHomePageFirstTime');
-	const recommendationsSource = 'UCYfdidRxbB8Qhf0Nx7ioOYw';
-	log('getting the recommendations to inject...');
-	const rawInjectionSource = (await fetchRecommendationsToInject(recommendationsSource))
-		.map(({recommendation}) => recommendation).slice(0, 10);
 
-	const filterPromises = rawInjectionSource.map(async r => {
+	const config = await api.getConfig();
+
+	if (config.kind === 'Failure') {
+		console.error('Could not get config:', config.message);
+		return;
+	}
+
+	if (config.value.arm === 'control') {
+		return;
+	}
+
+	const recommendationsSource = await api.getChannelSource();
+	log('getting the recommendations to inject from:', recommendationsSource);
+	const channelData = await fetchRecommendationsToInject(recommendationsSource);
+	log('raw injection source channel data:', channelData);
+
+	const unfilteredRecommendations = channelData.map(({recommendation}) => recommendation).slice(0, 10);
+	log('unfiltered recommendations:', unfilteredRecommendations);
+
+	const filterPromises = unfilteredRecommendations.map(async r => {
 		const exists = await urlExists(getHomeMiniatureUrl(r.videoId));
 		return {ok: exists, rec: r};
 	});
 
 	const filtered = await Promise.all(filterPromises);
+	log('filtered recommendations:', filtered);
 
 	for (const {ok, rec} of filtered) {
 		if (ok) {
@@ -257,16 +273,6 @@ const onVisitHomePageFirstTime = async () => {
 	try {
 		homeVideos.splice(0, homeVideos.length, ...getHomeVideos());
 		log('home videos:', homeVideos);
-
-		const config = await api.getConfig();
-		if (config.kind === 'Failure') {
-			console.error('Could not get config:', config.message);
-			return;
-		}
-
-		if (config.value.arm === 'control') {
-			return;
-		}
 
 		const replace = () => {
 			if (injectionSource.length < 3) {

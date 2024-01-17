@@ -45,11 +45,11 @@ export const extractYtInitialData = (rawPageHtml: string) => {
 	});
 };
 
-export type TreeCallback = (node: unknown, path: string[]) => 'recurse' | 'stop';
+export type TreeCallback = (node: unknown, path: string[], fullObject?: unknown) => 'recurse' | 'stop';
 
 export const walkTree = (cb: TreeCallback) => (node: unknown) => {
-	const walk = (node: unknown, path: string[]) => {
-		const andThen = cb(node, path);
+	const walk = (node: unknown, path: string[], fullObject: unknown) => {
+		const andThen = cb(node, path, fullObject);
 
 		if (andThen === 'stop') {
 			return;
@@ -61,7 +61,7 @@ export const walkTree = (cb: TreeCallback) => (node: unknown) => {
 
 		if (Array.isArray(node)) {
 			for (const [index, value] of node.entries()) {
-				walk(value, [...path, index.toString()]);
+				walk(value, [...path, index.toString()], fullObject);
 			}
 
 			return;
@@ -69,12 +69,12 @@ export const walkTree = (cb: TreeCallback) => (node: unknown) => {
 
 		if (typeof node === 'object') {
 			for (const [key, value] of Object.entries(node)) {
-				walk(value, [...path, key]);
+				walk(value, [...path, key], fullObject);
 			}
 		}
 	};
 
-	walk(node, []);
+	walk(node, [], node);
 };
 
 export type ChannelRecommendation = {
@@ -84,12 +84,32 @@ export type ChannelRecommendation = {
 	rawNode: unknown;
 };
 
+const getMiniatureUrl = (node: unknown) => {
+	if (typeof node !== 'object' || node === null) {
+		throw new Error('Invalid node');
+	}
+
+	const videoId = get(['videoId'])(node) as string;
+
+	const defaultUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+
+	const thumbnails = get(['thumbnail', 'thumbnails'])(node) as Array<{url: string; width: number; height: number}>;
+
+	if (!thumbnails) {
+		return defaultUrl;
+	}
+
+	const sortedThumbnails = thumbnails.sort((a, b) => (b.width * b.height) - (a.width * a.height));
+
+	return sortedThumbnails[0].url;
+};
+
 export const extractRecommendations = (
 	initialData: Record<string, unknown>,
 ): ChannelRecommendation[] => {
 	const recommendations: ChannelRecommendation[] = [];
 
-	const cb: TreeCallback = (node, path) => {
+	const cb: TreeCallback = (node, path, fullObject) => {
 		if (path.length === 0) {
 			return 'recurse';
 		}
@@ -135,21 +155,7 @@ export const extractRecommendations = (
 					}
 				};
 
-				const getMiniatureUrl = () => {
-					const defaultUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-
-					const thumbnails = get(['thumbnail', 'thumbnails'])(node) as Array<{url: string; width: number; height: number}>;
-
-					if (!thumbnails) {
-						return defaultUrl;
-					}
-
-					const sortedThumbnails = thumbnails.sort((a, b) => (b.width * b.height) - (a.width * a.height));
-
-					return sortedThumbnails[0].url;
-				};
-
-				const miniatureUrl = getMiniatureUrl();
+				const miniatureUrl = getMiniatureUrl(node);
 
 				const recommendation: Recommendation = {
 					videoId,
@@ -176,6 +182,66 @@ export const extractRecommendations = (
 			} catch (error) {
 				log('error parsing videoRenderer', {path, node, error});
 			}
+		}
+
+		if (lastKey === 'gridVideoRenderer') {
+			try {
+				const videoId = get(['videoId'])(node) as string;
+				const channelName = get([
+					'metadata',
+					'channelMetadataRenderer',
+					'title',
+				])(fullObject) as string;
+
+				const channelVanityUrl = get([
+					'metadata',
+					'channelMetadataRenderer',
+					'vanityChannelUrl',
+				])(fullObject) as string;
+
+				const partsOfChanelUrl = channelVanityUrl.split('/');
+
+				const channelShortName = partsOfChanelUrl[partsOfChanelUrl.length - 1];
+
+				const recommendation: Recommendation = {
+					title: get(['title', 'runs', '0', 'text'])(node) as string,
+					url: `https://www.youtube.com/watch?v=${videoId}`,
+					videoId,
+					miniatureUrl: getMiniatureUrl(node),
+					channelName,
+					views: get(['viewCountText', 'simpleText'])(node) as string,
+					publishedSince: get(['publishedTimeText', 'simpleText'])(node) as string,
+					personalization: 'personalized',
+					hoverAnimationUrl: get([
+						'richThumbnail',
+						'movingThumbnailRenderer',
+						'movingThumbnailDetails',
+						'thumbnails',
+						'0',
+						'url',
+					])(node) as string,
+					channelMiniatureUrl: get([
+						'metadata',
+						'channelMetadataRenderer',
+						'avatar',
+						'thumbnails',
+						'0',
+						'url',
+					])(fullObject) as string,
+					channelShortName,
+				};
+
+				recommendations.push({
+					title: recommendation.title,
+					path,
+					recommendation,
+					rawNode: node,
+				});
+			} catch (error) {
+				log('error parsing gridVideoRenderer', {path, node, error});
+			}
+
+			return 'stop';
 		}
 
 		return 'recurse';

@@ -1,3 +1,4 @@
+import {type ParticipantChannelSource} from './common/types/participantChannelSource';
 import {type Maybe, makeApiVerbCreator, memoizeTemporarily} from './common/util';
 import type Session from './common/models/session';
 import Event, {EventType} from './common/models/event';
@@ -12,6 +13,7 @@ import {
 	postCheckParticipantCode,
 	getParticipantConfig,
 	postEvent,
+	getParticipantChannelSource,
 } from './common/clientRoutes';
 
 export type Api = {
@@ -26,6 +28,7 @@ export type Api = {
 	getConfig: () => Promise<Maybe<ParticipantConfig>>;
 	postEvent: (event: Event, storeForRetry: boolean) => Promise<boolean>;
 	getHeaders: () => Record<string, string>;
+	getChannelSource: () => Promise<string>;
 	logout(): void;
 };
 
@@ -334,6 +337,16 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 
 		setTabActive(active: boolean | undefined) {
 			tabIsActive = active;
+		},
+
+		async getChannelSource() {
+			const res = await get<ParticipantChannelSource>(getParticipantChannelSource, {}, headers());
+
+			if (res.kind !== 'Success') {
+				throw new Error(`Failed to get channel source: ${res.message}`);
+			}
+
+			return res.value.channelId;
 		},
 	};
 

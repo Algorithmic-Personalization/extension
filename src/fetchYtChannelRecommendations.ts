@@ -1,4 +1,4 @@
-import {extractYtInitialData, extractRecommendations, type ChannelRecommendation} from './lib';
+import {extractYtInitialData, extractRecommendations, type ChannelRecommendation, log} from './lib';
 
 export const fetchYtChannelRecommendations = async (source: string | {url: string}): Promise<ChannelRecommendation[]> => {
 	const channelUrl = typeof source === 'string'
@@ -8,8 +8,6 @@ export const fetchYtChannelRecommendations = async (source: string | {url: strin
 	const html = await (await fetch(channelUrl, {
 		credentials: 'include',
 	})).text();
-
-	console.log({html});
 
 	const initialDataScript = extractYtInitialData(html);
 
@@ -24,6 +22,8 @@ export const fetchYtChannelRecommendations = async (source: string | {url: strin
 	}
 
 	const initialData = JSON.parse(jsonText) as Record<string, unknown>;
+
+	log('initialData', initialData);
 
 	return extractRecommendations(initialData);
 };
