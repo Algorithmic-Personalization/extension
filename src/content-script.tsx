@@ -279,6 +279,10 @@ const onVisitHomePageFirstTime = async () => {
 		return;
 	}
 
+	if (config.value.phase !== 1) {
+		return;
+	}
+
 	const recommendationsToInject = await getRecommendationsToInject();
 	injectionSource.splice(0, injectionSource.length, ...recommendationsToInject);
 
