@@ -15,7 +15,7 @@ import Event from './common/models/event';
 import MessageC from './components/MessageC';
 
 import RecommendationsListC from './components/RecommendationsListC';
-import {log} from './lib';
+import {isLoggedIn, log} from './lib';
 
 import {useApi} from './apiProvider';
 
@@ -30,20 +30,6 @@ const loadLocalConfig = (): ParticipantConfig | undefined => {
 	return undefined;
 };
 
-const debounceMs = (ms: number) => (fn: () => void) => {
-	let timeout: NodeJS.Timeout;
-
-	return () => {
-		if (timeout) {
-			clearTimeout(timeout);
-		}
-
-		timeout = setTimeout(fn, ms);
-	};
-};
-
-const debounce = debounceMs(5000);
-
 const App: React.FC = () => {
 	const localCode = localStorage.getItem('participantCode') ?? '';
 	const [currentUrl, setCurrentUrl] = useState<string>('');
@@ -51,7 +37,7 @@ const App: React.FC = () => {
 	const [participantCodeValid, setParticipantCodeValid] = useState<boolean>(localStorage.getItem('participantCodeValid') === 'true');
 	const [error, setError] = useState<string | undefined>();
 	const [cfg, setCfg] = useState(loadLocalConfig());
-	const [loggedIn, setLoggedIn] = useState<boolean>(sessionStorage.getItem('loggedIn') === 'true');
+	const [loggedIn, setLoggedIn] = useState<boolean>(localStorage.getItem('loggedIn') === 'true');
 
 	const api = useApi();
 
@@ -72,16 +58,19 @@ const App: React.FC = () => {
 		}
 	};
 
-	const updateLoggedIn = debounce(() => {
-		const loggedInWidget = document.querySelector('#avatar-btn');
-		if (loggedInWidget) {
-			sessionStorage.setItem('loggedIn', 'true');
+	const updateLoggedIn = () => {
+		if (isLoggedIn()) {
+			localStorage.setItem('loggedIn', 'true');
 			setLoggedIn(true);
 		} else {
-			sessionStorage.setItem('loggedIn', 'false');
-			setLoggedIn(false);
+			setTimeout(() => {
+				if (!isLoggedIn()) {
+					localStorage.setItem('loggedIn', 'false');
+					setLoggedIn(false);
+				}
+			}, 15000);
 		}
-	});
+	};
 
 	const postEvent = async (e: Event) => {
 		const enrichedEvent = new Event();
@@ -98,7 +87,6 @@ const App: React.FC = () => {
 
 	useEffect(() => {
 		console.log('YouTube Recommendations Experiment v', packageJson.version);
-		console.log('Fetching list of available updates...');
 
 		updateUrl();
 		updateLoggedIn();

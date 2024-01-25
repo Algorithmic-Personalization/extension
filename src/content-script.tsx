@@ -16,6 +16,7 @@ import WatchTimeEvent from './common/models/watchTimeEvent';
 import HomeShownEvent from './common/models/homeShownEvent';
 import {type Recommendation} from './common/types/Recommendation';
 import {Event as AppEvent, EventType} from './common/models/event';
+import {isLoggedIn} from './lib';
 
 let root: HTMLElement | undefined;
 let previousUrl: string | undefined;
@@ -272,6 +273,10 @@ const onVisitHomePageFirstTime = async () => {
 
 	if (config.kind === 'Failure') {
 		console.error('Could not get config:', config.message);
+		return;
+	}
+
+	if (!isLoggedIn()) {
 		return;
 	}
 

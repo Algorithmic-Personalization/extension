@@ -259,3 +259,5 @@ export const urlExists = async (url: string): Promise<boolean> => {
 
 	return res.ok;
 };
+
+export const isLoggedIn = () => Boolean(document.querySelector('#avatar-btn'));
