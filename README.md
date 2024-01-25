@@ -16,11 +16,11 @@ In the terminal:
 `git clone https://github.com/Algorithmic-Personalization/ytdpnl-extension.git --recursive`
 
 In order to be sure to get the version corresponding to the submitted extension,
-please checkout this commit for v2.2.2:
+please checkout this commit for v2.2.3:
 
 ```bash
 cd ytdpnl-extension
-git checkout b45054c6
+git checkout cbb8b882
 ```
 
 ## Install the dependencies
