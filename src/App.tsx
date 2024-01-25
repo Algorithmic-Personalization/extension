@@ -31,7 +31,7 @@ const loadLocalConfig = (): ParticipantConfig | undefined => {
 };
 
 const App: React.FC = () => {
-	const localCode = localStorage.getItem('participantCode') ?? '';
+	const localCode = localStorage.getItem('participantCode') ?? sessionStorage.getItem('participantCode') ?? '';
 	const [currentUrl, setCurrentUrl] = useState<string>('');
 	const [participantCode, setParticipantCode] = useState<string>(localCode);
 	const [participantCodeValid, setParticipantCodeValid] = useState<boolean>(localStorage.getItem('participantCodeValid') === 'true');
@@ -86,6 +86,13 @@ const App: React.FC = () => {
 	};
 
 	useEffect(() => {
+		const codeInSessionStorage = sessionStorage.getItem('participantCode');
+
+		if (codeInSessionStorage) {
+			localStorage.setItem('participantCode', codeInSessionStorage);
+			sessionStorage.removeItem('participantCode');
+		}
+
 		console.log('YouTube Recommendations Experiment v', packageJson.version);
 
 		updateUrl();
@@ -190,10 +197,7 @@ const App: React.FC = () => {
 	}
 
 	if (participantCode && !participantCodeValid) {
-		return codeForm(<>
-			Your participant code seems invalid,
-			<br />please try again or refresh the page.
-		</>);
+		return codeForm();
 	}
 
 	const logout = (
