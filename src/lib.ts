@@ -261,3 +261,65 @@ export const urlExists = async (url: string): Promise<boolean> => {
 };
 
 export const isLoggedIn = () => Boolean(document.querySelector('#avatar-btn'));
+
+const namespace = 'ytdpnl-extension-';
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export const getFromLocalStorage = (key: string): string | null => {
+	const newFormat = localStorage.getItem(namespace + key);
+
+	if (newFormat) {
+		return newFormat;
+	}
+
+	const oldFormat = localStorage.getItem(key);
+
+	if (oldFormat) {
+		localStorage.setItem(namespace + key, oldFormat);
+		localStorage.removeItem(key);
+
+		return oldFormat;
+	}
+
+	return null;
+};
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export const getFromSessionStorage = (key: string): string | null => {
+	const newFormat = sessionStorage.getItem(namespace + key);
+
+	if (newFormat) {
+		return newFormat;
+	}
+
+	const oldFormat = sessionStorage.getItem(key);
+
+	if (oldFormat) {
+		sessionStorage.setItem(namespace + key, oldFormat);
+		sessionStorage.removeItem(key);
+
+		return oldFormat;
+	}
+
+	return null;
+};
+
+export const saveToLocalStorage = (key: string, value: string) => {
+	localStorage.removeItem(key);
+	localStorage.setItem(namespace + key, value);
+};
+
+export const saveToSessionStorage = (key: string, value: string) => {
+	sessionStorage.removeItem(key);
+	sessionStorage.setItem(namespace + key, value);
+};
+
+export const deleteFromLocalStorage = (key: string) => {
+	localStorage.removeItem(key);
+	localStorage.removeItem(namespace + key);
+};
+
+export const deleteFromSessionStorage = (key: string) => {
+	sessionStorage.removeItem(key);
+	sessionStorage.removeItem(namespace + key);
+};

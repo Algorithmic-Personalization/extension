@@ -16,6 +16,8 @@ import {
 	getParticipantChannelSource,
 } from './common/clientRoutes';
 
+import {getFromLocalStorage, getFromSessionStorage, saveToLocalStorage, saveToSessionStorage} from './lib';
+
 export type Api = {
 	sendPageView: () => void;
 	setTabActive: (active: boolean | undefined) => void;
@@ -49,13 +51,13 @@ const eventsStorageKey = 'events';
 let tabIsActive: boolean | undefined;
 
 const loadStoredEvents = () => {
-	const dataStr = localStorage.getItem(eventsStorageKey);
+	const dataStr = getFromLocalStorage(eventsStorageKey);
 
 	if (!dataStr) {
 		return [];
 	}
 
-	const json = localStorage.getItem('lz-string') === 'true'
+	const json = getFromLocalStorage('lz-string') === 'true'
 		? decompressFromUTF16(dataStr)
 		: dataStr;
 
@@ -74,7 +76,7 @@ const saveStoredEventsFallback = (events: StoredEvent[], maxAttemptsCutOff: numb
 	console.log('Thinning events some to those attempted', maxAttemptsCutOff, 'times');
 	const newEvents = events.filter(e => e.attempts < maxAttemptsCutOff);
 	try {
-		localStorage.setItem(eventsStorageKey, compressToUTF16(JSON.stringify(newEvents)));
+		saveToLocalStorage(eventsStorageKey, compressToUTF16(JSON.stringify(newEvents)));
 		console.log('Stored events locally after thinning to', maxAttemptsCutOff, 'attempts');
 	} catch (e) {
 		if (maxAttemptsCutOff > 0) {
@@ -87,10 +89,10 @@ const saveStoredEventsFallback = (events: StoredEvent[], maxAttemptsCutOff: numb
 
 const saveStoredEvents = (events: StoredEvent[]) => {
 	try {
-		localStorage.setItem('lz-string', 'true');
+		saveToLocalStorage('lz-string', 'true');
 		const data = compressToUTF16(JSON.stringify(events));
 		console.log('Attempting to store events locally with a total size of approx.', data.length / 512, 'KB');
-		localStorage.setItem(eventsStorageKey, data);
+		saveToLocalStorage(eventsStorageKey, data);
 		console.log('Cached events locally with success.');
 	} catch (e) {
 		console.error('Failed to store events locally, forgetting older ones...', e);
@@ -155,8 +157,8 @@ const clearStoredEvent = (event: Event) => {
 };
 
 export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api => {
-	let participantCode = localStorage.getItem('participantCode') ?? overrideParticipantCode ?? '';
-	let sessionUuid = sessionStorage.getItem('sessionUuid') ?? '';
+	let participantCode = getFromLocalStorage('participantCode') ?? overrideParticipantCode ?? '';
+	let sessionUuid = getFromSessionStorage('sessionUuid') ?? '';
 	let sessionPromise: Promise<Maybe<Session>> | undefined;
 
 	const storeEvent = (event: Event) => {
@@ -219,7 +221,7 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 		},
 
 		setAuth(code: string) {
-			localStorage.setItem('participantCode', code);
+			saveToLocalStorage('participantCode', code);
 			participantCode = code;
 		},
 
@@ -235,7 +237,7 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 
 			if (res.kind === 'Success') {
 				sessionUuid = res.value.uuid;
-				sessionStorage.setItem('sessionUuid', sessionUuid);
+				saveToSessionStorage('sessionUuid', sessionUuid);
 				console.log('New session', sessionUuid);
 				api.sendPageView();
 				return true;

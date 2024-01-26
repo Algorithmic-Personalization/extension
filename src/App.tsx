@@ -15,14 +15,14 @@ import Event from './common/models/event';
 import MessageC from './components/MessageC';
 
 import RecommendationsListC from './components/RecommendationsListC';
-import {isLoggedIn, log} from './lib';
+import {deleteFromLocalStorage, deleteFromSessionStorage, getFromLocalStorage, getFromSessionStorage, isLoggedIn, log, saveToLocalStorage, saveToSessionStorage} from './lib';
 
 import {useApi} from './apiProvider';
 
 import packageJson from '../package.json';
 
 const loadLocalConfig = (): ParticipantConfig | undefined => {
-	const item = sessionStorage.getItem('cfg');
+	const item = getFromSessionStorage('cfg');
 	if (item) {
 		return JSON.parse(item) as ParticipantConfig;
 	}
@@ -31,24 +31,24 @@ const loadLocalConfig = (): ParticipantConfig | undefined => {
 };
 
 const App: React.FC = () => {
-	const localCode = localStorage.getItem('participantCode') ?? sessionStorage.getItem('participantCode') ?? '';
+	const localCode = getFromLocalStorage('participantCode') ?? getFromSessionStorage('participantCode') ?? '';
 	const [currentUrl, setCurrentUrl] = useState<string>('');
 	const [participantCode, setParticipantCode] = useState<string>(localCode);
-	const [participantCodeValid, setParticipantCodeValid] = useState<boolean>(localStorage.getItem('participantCodeValid') === 'true');
+	const [participantCodeValid, setParticipantCodeValid] = useState<boolean>(getFromLocalStorage('participantCodeValid') === 'true');
 	const [error, setError] = useState<string | undefined>();
 	const [cfg, setCfg] = useState(loadLocalConfig());
-	const [loggedIn, setLoggedIn] = useState<boolean>(localStorage.getItem('loggedIn') === 'true');
+	const [loggedIn, setLoggedIn] = useState<boolean>(getFromLocalStorage('loggedIn') === 'true');
 
 	const api = useApi();
 
 	const handleLogout = () => {
 		api.logout();
-		sessionStorage.removeItem('cfg');
+		deleteFromSessionStorage('cfg');
 		setParticipantCode('');
 		setParticipantCodeValid(false);
-		localStorage.removeItem('participantCode');
-		localStorage.removeItem('participantCodeValid');
-		localStorage.removeItem('loggedIn');
+		deleteFromLocalStorage('participantCode');
+		deleteFromLocalStorage('participantCodeValid');
+		deleteFromLocalStorage('loggedIn');
 	};
 
 	const updateUrl = () => {
@@ -60,12 +60,12 @@ const App: React.FC = () => {
 
 	const updateLoggedIn = () => {
 		if (isLoggedIn()) {
-			localStorage.setItem('loggedIn', 'true');
+			saveToLocalStorage('loggedIn', 'true');
 			setLoggedIn(true);
 		} else {
 			setTimeout(() => {
 				if (!isLoggedIn()) {
-					localStorage.setItem('loggedIn', 'false');
+					saveToLocalStorage('loggedIn', 'false');
 					setLoggedIn(false);
 				}
 			}, 15000);
@@ -86,11 +86,11 @@ const App: React.FC = () => {
 	};
 
 	useEffect(() => {
-		const codeInSessionStorage = sessionStorage.getItem('participantCode');
+		const codeInSessionStorage = getFromSessionStorage('participantCode');
 
 		if (codeInSessionStorage) {
-			localStorage.setItem('participantCode', codeInSessionStorage);
-			sessionStorage.removeItem('participantCode');
+			saveToLocalStorage('participantCode', codeInSessionStorage);
+			deleteFromSessionStorage('participantCode');
 		}
 
 		console.log('YouTube Recommendations Experiment v', packageJson.version);
@@ -121,7 +121,7 @@ const App: React.FC = () => {
 		api.getConfig().then(c => {
 			if (c.kind === 'Success') {
 				setCfg(c.value);
-				sessionStorage.setItem('cfg', JSON.stringify(c.value));
+				saveToSessionStorage('cfg', JSON.stringify(c.value));
 			} else {
 				console.error('Could not get config:', c.message);
 			}
@@ -143,12 +143,12 @@ const App: React.FC = () => {
 		if (!valid) {
 			setError('Invalid participant code');
 			setParticipantCodeValid(false);
-			localStorage.setItem('participantCodeValid', 'false');
+			saveToLocalStorage('participantCodeValid', 'false');
 			return;
 		}
 
 		setParticipantCodeValid(true);
-		localStorage.setItem('participantCodeValid', 'true');
+		saveToLocalStorage('participantCodeValid', 'true');
 		api.setAuth(participantCode);
 		api.newSession().catch(e => {
 			console.log('Error creating new session:', e);
