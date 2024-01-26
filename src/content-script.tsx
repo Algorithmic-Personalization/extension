@@ -220,7 +220,8 @@ if (!homeLinkChanged) {
 	});
 }
 
-let homePageChanged = false;
+let homePageAltered = false;
+let homePageAlteredSuccessfully = false;
 
 const findHighestSingleParent = (elt: HTMLElement): HTMLElement => {
 	if (elt.parentElement && elt.parentElement.children.length === 1) {
@@ -321,13 +322,15 @@ const onVisitHomePageFirstTime = async () => {
 				setTimeout(resolve, 100);
 			});
 		}
+
+		homePageAlteredSuccessfully = true;
 	} catch (error) {
 		console.error(error);
 	}
 };
 
 const onVisitHomePage = () => {
-	if (!injectionSource) {
+	if (!homePageAlteredSuccessfully) {
 		return;
 	}
 
@@ -366,8 +369,8 @@ const observer = new MutationObserver(async () => {
 		previousUrl = window.location.href;
 
 		if (isOnHomePage()) {
-			if (!homePageChanged) {
-				homePageChanged = true;
+			if (!homePageAltered) {
+				homePageAltered = true;
 				await onVisitHomePageFirstTime().catch(log);
 			}
 
