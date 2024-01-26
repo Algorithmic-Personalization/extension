@@ -281,19 +281,21 @@ const onVisitHomePageFirstTime = async () => {
 		return;
 	}
 
+	homeVideos.splice(0, homeVideos.length, ...getHomeVideos());
+	log('home videos:', homeVideos);
+
 	if (config.value.arm === 'control') {
+		homePageAlteredSuccessfully = true;
 		return;
 	}
 
 	if (config.value.phase !== 1) {
+		homePageAlteredSuccessfully = true;
 		return;
 	}
 
 	const recommendationsToInject = await getRecommendationsToInject();
 	injectionSource.splice(0, injectionSource.length, ...recommendationsToInject);
-
-	homeVideos.splice(0, homeVideos.length, ...getHomeVideos());
-	log('home videos:', homeVideos);
 
 	try {
 		const replace = () => {
