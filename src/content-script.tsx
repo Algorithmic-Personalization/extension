@@ -354,6 +354,44 @@ const onVisitHomePage = () => {
 const urlChanged = (): boolean =>
 	window.location.href !== previousUrl;
 
+const setupSidebarApp = (): boolean => {
+	const related = document.querySelector('#related');
+
+	if (!related) {
+		return false;
+	}
+
+	const relatedElt: HTMLElement = related as HTMLElement;
+
+	if (relatedElt.style.display === 'none') {
+		return false;
+	}
+
+	if (!relatedElt.parentElement) {
+		return false;
+	}
+
+	relatedElt.style.display = 'none';
+
+	if (!root) {
+		root = document.createElement('div');
+
+		createRoot(root).render((
+			<React.StrictMode>
+				<ThemeProvider theme={theme}>
+					<ApiProvider value={api}>
+						<App />
+					</ApiProvider>
+				</ThemeProvider>
+			</React.StrictMode>
+		));
+
+		relatedElt.parentElement.appendChild(root);
+	}
+
+	return Boolean(root);
+};
+
 const observer = new MutationObserver(async () => {
 	if (urlChanged()) {
 		if (isVideoPage(previousUrl)) {
@@ -361,6 +399,7 @@ const observer = new MutationObserver(async () => {
 		}
 
 		if (isOnVideoPage()) {
+			setupSidebarApp();
 			// If we arrive on a video page, start watching the video
 			// for watch time events...
 			// Beware that this will reset watch time of previous video.
@@ -381,40 +420,6 @@ const observer = new MutationObserver(async () => {
 
 		api.sendPageView();
 	}
-
-	const related = document.querySelector('#related');
-
-	if (!related) {
-		return;
-	}
-
-	const relatedElt: HTMLElement = related as HTMLElement;
-
-	if (relatedElt.style.display === 'none') {
-		return;
-	}
-
-	if (!relatedElt.parentElement) {
-		return;
-	}
-
-	relatedElt.style.display = 'none';
-
-	if (!root) {
-		root = document.createElement('div');
-
-		createRoot(root).render((
-			<React.StrictMode>
-				<ThemeProvider theme={theme}>
-					<ApiProvider value={api}>
-						<App />
-					</ApiProvider>
-				</ThemeProvider>
-			</React.StrictMode>
-		));
-	}
-
-	relatedElt.parentElement.appendChild(root);
 });
 
 observer.observe(document.body, {
