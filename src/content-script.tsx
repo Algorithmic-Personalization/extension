@@ -268,6 +268,14 @@ const getRecommendationsToInject = async (): Promise<Recommendation[]> => {
 	return recommendations;
 };
 
+const unInstallLoader = () => {
+	// Make sure the hiding div is removed
+	// but in the next event loop iteration to avoid glitches
+	setInterval(() => {
+		hidingDiv?.remove();
+	}, 0);
+};
+
 const onVisitHomePageFirstTime = async () => {
 	log('onVisitHomePageFirstTime');
 
@@ -327,11 +335,6 @@ const onVisitHomePageFirstTime = async () => {
 		}
 
 		homePageAlteredSuccessfully = true;
-		// Make sure the hiding div is removed
-		// but in the next event loop iteration to avoid glitches
-		setInterval(() => {
-			hidingDiv?.remove();
-		}, 0);
 	} catch (error) {
 		console.error(error);
 	}
@@ -346,6 +349,8 @@ const onVisitHomePage = () => {
 		homeVideos,
 		injectionSource,
 	});
+
+	unInstallLoader();
 
 	const e = new HomeShownEvent(
 		homeVideos.slice(0, 15),
@@ -400,26 +405,30 @@ const setupSidebarApp = (): boolean => {
 
 let loaderInstalled = false;
 
+const installLoader = () => {
+	const primary = document.getElementById('page-manager');
+	log('primary', primary);
+
+	if (primary) {
+		primary.style.position = 'relative';
+		hidingDiv = document.createElement('div');
+		hidingDiv.style.position = 'absolute';
+		hidingDiv.style.top = '0';
+		hidingDiv.style.left = '0';
+		hidingDiv.style.right = '0';
+		hidingDiv.style.bottom = '0';
+		hidingDiv.style.zIndex = '1000';
+		hidingDiv.style.backgroundColor = getThemeBackgroundColor();
+		primary.insertBefore(hidingDiv, primary.firstChild);
+		log('hiding div', hidingDiv);
+
+		loaderInstalled = true;
+	}
+};
+
 const observer = new MutationObserver(async () => {
 	if (isOnHomePage() && !loaderInstalled) {
-		const primary = document.getElementById('page-manager');
-		log('primary', primary);
-
-		if (primary) {
-			primary.style.position = 'relative';
-			hidingDiv = document.createElement('div');
-			hidingDiv.style.position = 'absolute';
-			hidingDiv.style.top = '0';
-			hidingDiv.style.left = '0';
-			hidingDiv.style.right = '0';
-			hidingDiv.style.bottom = '0';
-			hidingDiv.style.zIndex = '1000';
-			hidingDiv.style.backgroundColor = getThemeBackgroundColor();
-			primary.insertBefore(hidingDiv, primary.firstChild);
-			log('hiding div', hidingDiv);
-
-			loaderInstalled = true;
-		}
+		installLoader();
 	}
 
 	if (urlChanged()) {
