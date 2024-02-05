@@ -327,7 +327,11 @@ const onVisitHomePageFirstTime = async () => {
 		}
 
 		homePageAlteredSuccessfully = true;
-		hidingDiv?.remove();
+		// Make sure the hiding div is removed
+		// but in the next event loop iteration to avoid glitches
+		setInterval(() => {
+			hidingDiv?.remove();
+		}, 0);
 	} catch (error) {
 		console.error(error);
 	}
@@ -398,7 +402,7 @@ let loaderInstalled = false;
 
 const observer = new MutationObserver(async () => {
 	if (isOnHomePage() && !loaderInstalled) {
-		const primary = document.getElementById('primary');
+		const primary = document.getElementById('page-manager');
 		log('primary', primary);
 
 		if (primary) {
