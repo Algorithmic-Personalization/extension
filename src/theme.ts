@@ -8,6 +8,9 @@ export const theme = createTheme({
 	},
 });
 
+export const getThemeBackgroundColor = () =>
+	isDarkMode ? 'rgb(15, 15, 15)' : 'rgb(241, 241, 241)';
+
 theme.typography.h1 = {
 	fontSize: '14px',
 	color: isDarkMode ? 'rgb(241, 241, 241)' : 'rgb(15, 15, 15)',

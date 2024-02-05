@@ -6,7 +6,7 @@ import {ThemeProvider} from '@mui/material';
 import {isOnVideoPage, isVideoPage, isOnHomePage, log, urlExists} from './lib';
 import fetchRecommendationsToInject from './fetchYtChannelRecommendations';
 import App from './App';
-import theme from './theme';
+import theme, {getThemeBackgroundColor} from './theme';
 
 import HomeVideoCard, {getHomeMiniatureUrl} from './components/HomeVideoCard';
 
@@ -21,6 +21,7 @@ import {isLoggedIn} from './lib';
 let root: HTMLElement | undefined;
 let previousUrl: string | undefined;
 const idsReplaced = new Set<string>();
+let hidingDiv: HTMLDivElement | undefined;
 
 if (api.getSession() === undefined) {
 	api.newSession().catch(e => {
@@ -326,6 +327,7 @@ const onVisitHomePageFirstTime = async () => {
 		}
 
 		homePageAlteredSuccessfully = true;
+		hidingDiv?.remove();
 	} catch (error) {
 		console.error(error);
 	}
@@ -392,7 +394,30 @@ const setupSidebarApp = (): boolean => {
 	return Boolean(root);
 };
 
+let loaderInstalled = false;
+
 const observer = new MutationObserver(async () => {
+	if (isOnHomePage() && !loaderInstalled) {
+		const primary = document.getElementById('primary');
+		log('primary', primary);
+
+		if (primary) {
+			primary.style.position = 'relative';
+			hidingDiv = document.createElement('div');
+			hidingDiv.style.position = 'absolute';
+			hidingDiv.style.top = '0';
+			hidingDiv.style.left = '0';
+			hidingDiv.style.right = '0';
+			hidingDiv.style.bottom = '0';
+			hidingDiv.style.zIndex = '1000';
+			hidingDiv.style.backgroundColor = getThemeBackgroundColor();
+			primary.insertBefore(hidingDiv, primary.firstChild);
+			log('hiding div', hidingDiv);
+
+			loaderInstalled = true;
+		}
+	}
+
 	if (urlChanged()) {
 		if (isVideoPage(previousUrl)) {
 			attemptToSaveWatchTime(previousUrl);
