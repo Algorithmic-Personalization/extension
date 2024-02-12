@@ -394,26 +394,27 @@ const setupSidebarApp = (): boolean => {
 	return Boolean(root);
 };
 
-const partToMaskSelector = 'ytd-app';
+const partToMaskSelector = '#contents';
 const maskingDivId = 'ytdpnl-intervention-hiding-div';
 let maskingDiv: HTMLElement | undefined;
+let partToMask: HTMLElement | undefined;
 
 const installLoader = () => {
-	const partToHide = document.querySelector(partToMaskSelector) as HTMLElement | undefined;
-	log('part to be masked', partToHide);
+	partToMask = document.querySelector(partToMaskSelector) as HTMLElement | undefined;
+	log('part to be masked', partToMask);
 
-	if (partToHide) {
-		partToHide.style.position = 'relative';
+	if (partToMask) {
+		partToMask.style.position = 'relative';
 		maskingDiv = document.createElement('div');
 		maskingDiv.id = maskingDivId;
 		maskingDiv.style.position = 'absolute';
 		maskingDiv.style.top = '0';
+		maskingDiv.style.bottom = '0';
 		maskingDiv.style.left = '0';
 		maskingDiv.style.right = '0';
-		maskingDiv.style.bottom = '0';
 		maskingDiv.style.zIndex = '1000';
 		maskingDiv.style.backgroundColor = getThemeBackgroundColor();
-		partToHide.insertBefore(maskingDiv, partToHide.firstChild);
+		partToMask.insertBefore(maskingDiv, partToMask.firstChild);
 		log('hiding div', maskingDiv);
 	}
 };
@@ -428,7 +429,17 @@ const unInstallLoader = () => {
 	}, 0);
 };
 
-const observer = new MutationObserver(async () => {
+const observer = new MutationObserver(async e => {
+	for (const r of e) {
+		for (const n of Array.from(r.removedNodes)) {
+			if (n === partToMask) {
+				log('PART TO MASK DISAPPEARED');
+				partToMask = undefined;
+				maskingDiv = undefined;
+			}
+		}
+	}
+
 	if (isOnHomePage() && !loaderInstalled()) {
 		installLoader();
 	}
