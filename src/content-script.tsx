@@ -21,7 +21,6 @@ import {isLoggedIn} from './lib';
 let root: HTMLElement | undefined;
 let previousUrl: string | undefined;
 const idsReplaced = new Set<string>();
-let hidingDiv: HTMLDivElement | undefined;
 
 if (api.getSession() === undefined) {
 	api.newSession().catch(e => {
@@ -268,14 +267,6 @@ const getRecommendationsToInject = async (): Promise<Recommendation[]> => {
 	return recommendations;
 };
 
-const unInstallLoader = () => {
-	// Make sure the hiding div is removed
-	// but in the next event loop iteration to avoid glitches
-	setInterval(() => {
-		hidingDiv?.remove();
-	}, 0);
-};
-
 const onVisitHomePageFirstTime = async () => {
 	log('onVisitHomePageFirstTime');
 
@@ -403,31 +394,42 @@ const setupSidebarApp = (): boolean => {
 	return Boolean(root);
 };
 
-let loaderInstalled = false;
+const partToMaskSelector = 'ytd-app';
+const maskingDivId = 'ytdpnl-intervention-hiding-div';
+let maskingDiv: HTMLElement | undefined;
 
 const installLoader = () => {
-	const primary = document.getElementById('page-manager');
-	log('primary', primary);
+	const partToHide = document.querySelector(partToMaskSelector) as HTMLElement | undefined;
+	log('part to be masked', partToHide);
 
-	if (primary) {
-		primary.style.position = 'relative';
-		hidingDiv = document.createElement('div');
-		hidingDiv.style.position = 'absolute';
-		hidingDiv.style.top = '0';
-		hidingDiv.style.left = '0';
-		hidingDiv.style.right = '0';
-		hidingDiv.style.bottom = '0';
-		hidingDiv.style.zIndex = '1000';
-		hidingDiv.style.backgroundColor = getThemeBackgroundColor();
-		primary.insertBefore(hidingDiv, primary.firstChild);
-		log('hiding div', hidingDiv);
-
-		loaderInstalled = true;
+	if (partToHide) {
+		partToHide.style.position = 'relative';
+		maskingDiv = document.createElement('div');
+		maskingDiv.id = maskingDivId;
+		maskingDiv.style.position = 'absolute';
+		maskingDiv.style.top = '0';
+		maskingDiv.style.left = '0';
+		maskingDiv.style.right = '0';
+		maskingDiv.style.bottom = '0';
+		maskingDiv.style.zIndex = '1000';
+		maskingDiv.style.backgroundColor = getThemeBackgroundColor();
+		partToHide.insertBefore(maskingDiv, partToHide.firstChild);
+		log('hiding div', maskingDiv);
 	}
 };
 
+const loaderInstalled = () => Boolean(maskingDiv);
+
+const unInstallLoader = () => {
+	// Make sure the hiding div is removed
+	// but in the next event loop iteration to avoid glitches
+	setInterval(() => {
+		maskingDiv?.remove();
+	}, 0);
+};
+
 const observer = new MutationObserver(async () => {
-	if (isOnHomePage() && !loaderInstalled) {
+	if (isOnHomePage() && !loaderInstalled()) {
 		installLoader();
 	}
 
