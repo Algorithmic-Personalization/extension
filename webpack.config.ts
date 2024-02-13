@@ -20,6 +20,7 @@ module.exports = {
 	mode,
 	entry: {
 		'content-script': './src/content-script.tsx',
+		'loader-masker': './src/loader-masker.ts',
 		background: './src/background.ts',
 	},
 	output: {

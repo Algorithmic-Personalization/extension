@@ -363,3 +363,5 @@ export const deleteFromSessionStorage = (key: string) => {
 	sessionStorage.removeItem(key);
 	sessionStorage.removeItem(namespace + key);
 };
+
+export const loaderId = 'ytdpnl-loader';

@@ -3,7 +3,7 @@ import {createRoot} from 'react-dom/client';
 
 import {ThemeProvider} from '@mui/material';
 
-import {isOnVideoPage, isVideoPage, isOnHomePage, log, urlExists, isLoggedInForSure} from './lib';
+import {isOnVideoPage, isVideoPage, isOnHomePage, log, urlExists, isLoggedInForSure, loaderId} from './lib';
 import fetchRecommendationsToInject from './fetchYtChannelRecommendations';
 import App from './App';
 import theme from './theme';
@@ -399,24 +399,6 @@ const setupSidebarApp = (): boolean => {
 	return Boolean(root);
 };
 
-const loaderId = 'ytdpnl-loader';
-let loaderInstalled = false;
-
-const installLoader = () => {
-	const maskingDiv = document.createElement('div');
-	maskingDiv.style.position = 'fixed';
-	maskingDiv.style.top = '0';
-	maskingDiv.style.left = '0';
-	maskingDiv.style.width = '100%';
-	maskingDiv.style.height = '100%';
-	maskingDiv.style.backgroundColor = 'white';
-	maskingDiv.style.zIndex = '100000';
-	maskingDiv.id = loaderId;
-
-	document.body.appendChild(maskingDiv);
-	loaderInstalled = true;
-};
-
 const unInstallLoader = () => {
 	const maskingDiv = document.getElementById(loaderId);
 
@@ -426,10 +408,6 @@ const unInstallLoader = () => {
 };
 
 const observer = new MutationObserver(async () => {
-	if (isOnHomePage() && !loaderInstalled) {
-		installLoader();
-	}
-
 	if (urlChanged()) {
 		if (isVideoPage(previousUrl)) {
 			attemptToSaveWatchTime(previousUrl);
