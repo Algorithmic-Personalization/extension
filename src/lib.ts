@@ -262,6 +262,46 @@ export const urlExists = async (url: string): Promise<boolean> => {
 
 export const isLoggedIn = () => Boolean(document.querySelector('#avatar-btn'));
 
+export const isNotLoggedIn = () => Boolean(
+	document.querySelector('a[href^="https://accounts.google.com/ServiceLogin?service=youtube"]'),
+);
+
+export type Res = 'yes' | 'no' | 'maybe';
+
+export const isLoggedInForSure = async (): Promise<Res> => {
+	const check = (): Res => {
+		if (isLoggedIn()) {
+			return 'yes';
+		}
+
+		if (isNotLoggedIn()) {
+			return 'no';
+		}
+
+		return 'maybe';
+	};
+
+	return new Promise<Res>(resolve => {
+		const res = check();
+
+		if (res !== 'maybe') {
+			resolve(res);
+			return;
+		}
+
+		const observer = new MutationObserver(() => {
+			const res = check();
+
+			if (res !== 'maybe') {
+				observer.disconnect();
+				resolve(res);
+			}
+		});
+
+		observer.observe(document.documentElement, {childList: true, subtree: true});
+	});
+};
+
 const namespace = 'ytdpnl-extension-';
 
 // eslint-disable-next-line @typescript-eslint/ban-types

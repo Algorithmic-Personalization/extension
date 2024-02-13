@@ -3,10 +3,10 @@ import {createRoot} from 'react-dom/client';
 
 import {ThemeProvider} from '@mui/material';
 
-import {isOnVideoPage, isVideoPage, isOnHomePage, log, urlExists} from './lib';
+import {isOnVideoPage, isVideoPage, isOnHomePage, log, urlExists, isLoggedInForSure} from './lib';
 import fetchRecommendationsToInject from './fetchYtChannelRecommendations';
 import App from './App';
-import theme, {getThemeBackgroundColor} from './theme';
+import theme from './theme';
 
 import HomeVideoCard, {getHomeMiniatureUrl} from './components/HomeVideoCard';
 
@@ -16,7 +16,6 @@ import WatchTimeEvent from './common/models/watchTimeEvent';
 import HomeShownEvent from './common/models/homeShownEvent';
 import {type Recommendation} from './common/types/Recommendation';
 import {Event as AppEvent, EventType} from './common/models/event';
-import {isLoggedIn} from './lib';
 
 let root: HTMLElement | undefined;
 let previousUrl: string | undefined;
@@ -277,7 +276,13 @@ const onVisitHomePageFirstTime = async () => {
 		return;
 	}
 
-	if (!isLoggedIn()) {
+	const loggedIn = await isLoggedInForSure();
+
+	console.log('logged in:', loggedIn);
+
+	if (loggedIn !== 'yes') {
+		log('not logged in to youtube, not altering home page');
+		unInstallLoader();
 		return;
 	}
 
@@ -394,53 +399,34 @@ const setupSidebarApp = (): boolean => {
 	return Boolean(root);
 };
 
-const partToMaskSelector = '#contents';
-const maskingDivId = 'ytdpnl-intervention-hiding-div';
-let maskingDiv: HTMLElement | undefined;
-let partToMask: HTMLElement | undefined;
+const loaderId = 'ytdpnl-loader';
+let loaderInstalled = false;
 
 const installLoader = () => {
-	partToMask = document.querySelector(partToMaskSelector) as HTMLElement | undefined;
-	log('part to be masked', partToMask);
+	const maskingDiv = document.createElement('div');
+	maskingDiv.style.position = 'fixed';
+	maskingDiv.style.top = '0';
+	maskingDiv.style.left = '0';
+	maskingDiv.style.width = '100%';
+	maskingDiv.style.height = '100%';
+	maskingDiv.style.backgroundColor = 'white';
+	maskingDiv.style.zIndex = '100000';
+	maskingDiv.id = loaderId;
 
-	if (partToMask) {
-		partToMask.style.position = 'relative';
-		maskingDiv = document.createElement('div');
-		maskingDiv.id = maskingDivId;
-		maskingDiv.style.position = 'absolute';
-		maskingDiv.style.top = '0';
-		maskingDiv.style.bottom = '0';
-		maskingDiv.style.left = '0';
-		maskingDiv.style.right = '0';
-		maskingDiv.style.zIndex = '1000';
-		maskingDiv.style.backgroundColor = getThemeBackgroundColor();
-		partToMask.insertBefore(maskingDiv, partToMask.firstChild);
-		log('hiding div', maskingDiv);
-	}
+	document.body.appendChild(maskingDiv);
+	loaderInstalled = true;
 };
-
-const loaderInstalled = () => Boolean(maskingDiv);
 
 const unInstallLoader = () => {
-	// Make sure the hiding div is removed
-	// but in the next event loop iteration to avoid glitches
-	setInterval(() => {
-		maskingDiv?.remove();
-	}, 0);
+	const maskingDiv = document.getElementById(loaderId);
+
+	if (maskingDiv) {
+		document.body.removeChild(maskingDiv);
+	}
 };
 
-const observer = new MutationObserver(async e => {
-	for (const r of e) {
-		for (const n of Array.from(r.removedNodes)) {
-			if (n === partToMask) {
-				log('PART TO MASK DISAPPEARED');
-				partToMask = undefined;
-				maskingDiv = undefined;
-			}
-		}
-	}
-
-	if (isOnHomePage() && !loaderInstalled()) {
+const observer = new MutationObserver(async () => {
+	if (isOnHomePage() && !loaderInstalled) {
 		installLoader();
 	}
 
