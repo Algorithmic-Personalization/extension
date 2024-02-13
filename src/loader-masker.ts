@@ -11,7 +11,6 @@ const waitForHomePageAndBody = async () => new Promise<void>(resolve => {
 	}
 
 	const observer = new MutationObserver(() => {
-		console.log('Checking for body and home page');
 		if (condition()) {
 			observer.disconnect();
 			resolve();
@@ -33,6 +32,7 @@ const installLoader = () => {
 	maskingDiv.id = loaderId;
 
 	document.body.appendChild(maskingDiv);
+	document.body.style.overflow = 'hidden';
 };
 
 const start = async () => {
