@@ -273,6 +273,7 @@ const onVisitHomePageFirstTime = async () => {
 
 	if (config.kind === 'Failure') {
 		console.error('Could not get config:', config.message);
+		unInstallLoader();
 		return;
 	}
 
