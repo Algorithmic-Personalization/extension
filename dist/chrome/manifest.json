@@ -1,6 +1,6 @@
 {
 	"name": "Algorithmic Personalization Project",
-	"version": "2.5.0.1",
+	"version": "2.6.0.0",
 	"manifest_version": 3,
 	"content_scripts": [
 		{
@@ -11,6 +11,16 @@
 			"js": [
 				"content-script.js"
 			]
+		},
+		{
+			"matches": [
+				"https://*.youtube.com/*",
+				"https://*.youtu.be/*"
+			],
+			"js": [
+				"loader-masker.js"
+			],
+			"run_at": "document_start"
 		}
 	],
 	"permissions": [],
