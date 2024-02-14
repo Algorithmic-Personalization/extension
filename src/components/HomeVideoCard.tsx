@@ -9,6 +9,7 @@ export const getHomeMiniatureUrl = (videoId: string) =>
 
 export const HomeVideoCard: React.FC<Recommendation & {
 	onClick: () => void;
+	onPictureLoaded?: () => void;
 }> = ({
 	videoId,
 	channelName,
@@ -20,6 +21,7 @@ export const HomeVideoCard: React.FC<Recommendation & {
 	channelMiniatureUrl,
 	hoverAnimationUrl,
 	onClick,
+	onPictureLoaded,
 }) => {
 	const [isHovering, setHovering] = useState(false);
 
@@ -88,6 +90,7 @@ export const HomeVideoCard: React.FC<Recommendation & {
 									}}
 									className='yt-core-image--fill-parent-height yt-core-image--fill-parent-width yt-core-image yt-core-image--content-mode-scale-aspect-fill yt-core-image--loaded'
 									src={mediaLink}
+									onLoad={onPictureLoaded}
 								/>
 							</div>
 						</a>

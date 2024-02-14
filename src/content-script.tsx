@@ -156,6 +156,15 @@ const getHomeVideos = (): HomeVideo[] => {
 	return maybeRes.filter(Boolean) as HomeVideo[];
 };
 
+let picturesLoaded = 0;
+
+const onPictureLoaded = () => {
+	++picturesLoaded;
+	if (picturesLoaded === 3) {
+		console.log('All pictures loaded');
+	}
+};
+
 const replaceHomeVideo = (videoId: string, recommendation: Recommendation): 0 | 1 => {
 	const links = Array.from(document.querySelectorAll(`a.ytd-thumbnail[href="/watch?v=${videoId}"]`));
 
@@ -197,6 +206,7 @@ const replaceHomeVideo = (videoId: string, recommendation: Recommendation): 0 | 
 					...{
 						...recommendation,
 						onClick: onInjectedVideoCardClicked,
+						onPictureLoaded,
 					}} />
 			</ThemeProvider>
 		</React.StrictMode>
@@ -418,9 +428,12 @@ const unInstallLoader = () => {
 	if (maskingDiv) {
 		// Wait for next tick to unmask,
 		// reduces flickering
-		setTimeout(() => {
-			document.body.removeChild(maskingDiv);
-		}, 0);
+		const i = setInterval(() => {
+			if (picturesLoaded === 3) {
+				document.body.removeChild(maskingDiv);
+				clearInterval(i);
+			}
+		}, 10);
 	}
 };
 
