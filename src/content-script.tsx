@@ -258,7 +258,12 @@ const getRecommendationsToInject = async (): Promise<Recommendation[]> => {
 
 	let recommendations = await getRecommendations();
 
-	while (recommendations.length < 3) {
+	const maxAttempts = 3;
+	let attempts = 0;
+
+	while (recommendations.length < 3 && attempts < maxAttempts) {
+		++attempts;
+
 		// eslint-disable-next-line no-await-in-loop
 		recommendations = await getRecommendations(true);
 	}
@@ -301,6 +306,13 @@ const onVisitHomePageFirstTime = async () => {
 	}
 
 	const recommendationsToInject = await getRecommendationsToInject();
+
+	if (recommendationsToInject.length < 3) {
+		console.error('Could not get enough recommendations to inject:', recommendationsToInject);
+		unInstallLoader();
+		return;
+	}
+
 	injectionSource.splice(0, injectionSource.length, ...recommendationsToInject);
 
 	try {
