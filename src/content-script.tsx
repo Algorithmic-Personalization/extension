@@ -418,7 +418,7 @@ const unInstallLoader = () => {
 	if (maskingDiv) {
 		// Wait for next tick to unmask,
 		// reduces flickering
-		setInterval(() => {
+		setTimeout(() => {
 			document.body.removeChild(maskingDiv);
 		}, 0);
 	}
