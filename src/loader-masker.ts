@@ -1,4 +1,4 @@
-import {isOnHomePage, loaderId} from './lib';
+import {isDebug, isOnHomePage, loaderId} from './lib';
 
 const isBodyPresent = () => Boolean(document.body);
 
@@ -30,6 +30,31 @@ const installLoader = () => {
 	maskingDiv.style.backgroundColor = 'white';
 	maskingDiv.style.zIndex = '100000';
 	maskingDiv.id = loaderId;
+
+	if (isDebug()) {
+		maskingDiv.style.opacity = localStorage.getItem('opacity') ?? '1';
+		const removeMaskBtn = document.createElement('button');
+		removeMaskBtn.type = 'button';
+		removeMaskBtn.style.margin = '42px';
+		removeMaskBtn.textContent = 'Remove loader mask (this is only visible in debug mode)';
+		removeMaskBtn.addEventListener('click', e => {
+			e.preventDefault();
+			maskingDiv.remove();
+		});
+		maskingDiv.appendChild(removeMaskBtn);
+
+		const helpText = document.createElement('p');
+		helpText.style.display = 'block';
+		helpText.style.margin = '42px';
+		helpText.style.border = '1px solid #ccc';
+		helpText.style.backgroundColor = 'white';
+		helpText.style.padding = '12px';
+		helpText.style.width = 'fit-content';
+		helpText.style.fontWeight = 'bold';
+		helpText.style.fontSize = '20px';
+		helpText.textContent = 'You can reduce the opacity of the mask by setting the variable "opacity" in localStorage. The value should be a number between 0 and 1.';
+		maskingDiv.appendChild(helpText);
+	}
 
 	document.body.appendChild(maskingDiv);
 	document.body.style.overflow = 'hidden';
