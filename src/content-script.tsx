@@ -416,7 +416,11 @@ const unInstallLoader = () => {
 	const maskingDiv = document.getElementById(loaderId);
 
 	if (maskingDiv) {
-		document.body.removeChild(maskingDiv);
+		// Wait for next tick to unmask,
+		// reduces flickering
+		setInterval(() => {
+			document.body.removeChild(maskingDiv);
+		}, 0);
 	}
 };
 
