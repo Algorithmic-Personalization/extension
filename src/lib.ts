@@ -15,6 +15,12 @@ export const log = (...args: any[]) => {
 		return;
 	}
 
+	if (args.length > 0 && args[0] === 'error') {
+		console.error(args[0]);
+		console.log(...args.slice(1));
+		return;
+	}
+
 	console.log(...args);
 };
 
@@ -180,7 +186,7 @@ export const extractRecommendations = (
 
 				return 'stop';
 			} catch (error) {
-				log('error parsing videoRenderer', {path, node, error});
+				log('error', 'parsing videoRenderer', {path, node, error});
 			}
 		}
 
@@ -238,7 +244,7 @@ export const extractRecommendations = (
 					rawNode: node,
 				});
 			} catch (error) {
-				log('error parsing gridVideoRenderer', {path, node, error});
+				log('error', 'parsing gridVideoRenderer', {path, node, error});
 			}
 
 			return 'stop';
