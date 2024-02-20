@@ -153,7 +153,7 @@ module.exports = {
 			},
 		}),
 	],
-	devtool: 'eval-source-map',
+	devtool: 'eval-source-map', // DO NOT FORGET TO REMOVE AFTER DEBUGGING FF
 	optimization: {
 		innerGraph: true,
 		mangleExports: 'deterministic',
