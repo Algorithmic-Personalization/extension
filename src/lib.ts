@@ -253,11 +253,15 @@ export const extractRecommendations = (
 };
 
 export const urlExists = async (url: string): Promise<boolean> => {
-	const res = await fetch(url, {
-		method: 'HEAD',
-	});
+	try {
+		const res = await fetch(url, {
+			method: 'HEAD',
+		});
 
-	return res.ok;
+		return res.ok;
+	} catch {
+		return false;
+	}
 };
 
 export const isLoggedIn = () => Boolean(document.querySelector('#avatar-btn'));
