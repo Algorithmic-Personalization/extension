@@ -153,7 +153,7 @@ module.exports = {
 			},
 		}),
 	],
-	devtool: mode === 'development' ? 'inline-source-map' : false,
+	devtool: 'eval-source-map',
 	optimization: {
 		innerGraph: true,
 		mangleExports: 'deterministic',
