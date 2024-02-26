@@ -120,11 +120,19 @@ export const extractRecommendations = (
 			return 'recurse';
 		}
 
+		const getTitle = () => {
+			try {
+				return get(['title', 'runs', '0', 'text'])(node) as string;
+			} catch {
+				return get(['title', 'simpleText'])(node) as string;
+			}
+		};
+
 		const lastKey = path[path.length - 1];
 
 		if (lastKey === 'videoRenderer') {
 			try {
-				const title = get(['title', 'runs', '0', 'text'])(node) as string;
+				const title = getTitle();
 
 				const videoId = get(['videoId'])(node) as string;
 
@@ -193,6 +201,9 @@ export const extractRecommendations = (
 		if (lastKey === 'gridVideoRenderer') {
 			try {
 				const videoId = get(['videoId'])(node) as string;
+
+				const title = getTitle();
+
 				const channelName = get([
 					'metadata',
 					'channelMetadataRenderer',
@@ -210,7 +221,7 @@ export const extractRecommendations = (
 				const channelShortName = partsOfChanelUrl[partsOfChanelUrl.length - 1];
 
 				const recommendation: Recommendation = {
-					title: get(['title', 'runs', '0', 'text'])(node) as string,
+					title,
 					url: `https://www.youtube.com/watch?v=${videoId}`,
 					videoId,
 					miniatureUrl: getMiniatureUrl(node),
@@ -258,16 +269,37 @@ export const extractRecommendations = (
 	return recommendations;
 };
 
-export const urlExists = async (url: string): Promise<boolean> => {
-	try {
-		const res = await fetch(url, {
-			method: 'HEAD',
-		});
+export const isChrome = () => navigator.userAgent.includes('Chrome');
 
-		return res.ok;
-	} catch {
-		return false;
+export const imageExists = async (url: string): Promise<boolean> => {
+	if (isChrome()) {
+		const r = await fetch(url, {method: 'HEAD'});
+		return r.ok;
 	}
+
+	return new Promise((resolve, reject) => {
+		try {
+			const img = new Image();
+			img.onload = () => {
+				document.body.removeChild(img);
+				resolve(true);
+			};
+
+			img.onerror = () => {
+				document.body.removeChild(img);
+				resolve(false);
+			};
+
+			img.style.width = '1px';
+			img.style.height = '1px';
+
+			img.src = url;
+
+			document.body.appendChild(img);
+		} catch (error) {
+			reject(error);
+		}
+	});
 };
 
 export const isLoggedIn = () => Boolean(document.querySelector('#avatar-btn'));

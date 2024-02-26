@@ -2,7 +2,7 @@ import React, {useState, useRef, useEffect} from 'react';
 import {Typography} from '@mui/material';
 
 import type Recommendation from '../common/types/Recommendation';
-import {urlExists} from '../lib';
+import {imageExists} from '../lib';
 
 export const getHomeMiniatureUrl = (videoId: string) =>
 	`https://i.ytimg.com/vi/${videoId}/hq720.jpg`;
@@ -40,7 +40,7 @@ export const HomeVideoCard: React.FC<Recommendation & {
 
 	useEffect(() => {
 		(async () => {
-			const picExists = await urlExists(candidateMiniatureUrls[0]);
+			const picExists = await imageExists(candidateMiniatureUrls[0]);
 
 			if (!picExists) {
 				setPictureUrl(candidateMiniatureUrls[1]);

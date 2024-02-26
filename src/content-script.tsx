@@ -3,7 +3,7 @@ import {createRoot} from 'react-dom/client';
 
 import {ThemeProvider} from '@mui/material';
 
-import {isOnVideoPage, isVideoPage, isOnHomePage, log, urlExists, isLoggedInForSure, loaderId} from './lib';
+import {isOnVideoPage, isVideoPage, isOnHomePage, log, imageExists, isLoggedInForSure, loaderId} from './lib';
 import fetchRecommendationsToInject from './fetchYtChannelRecommendations';
 import App from './App';
 import theme from './theme';
@@ -256,7 +256,7 @@ const getRecommendationsToInject = async (): Promise<Recommendation[]> => {
 		log('unfiltered recommendations:', unfilteredRecommendations);
 
 		const filterPromises = unfilteredRecommendations.map(async r => {
-			const exists = await urlExists(getHomeMiniatureUrl(r.videoId));
+			const exists = await imageExists(getHomeMiniatureUrl(r.videoId));
 			return {ok: exists, rec: r};
 		});
 
