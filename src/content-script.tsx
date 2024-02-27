@@ -1,4 +1,7 @@
-import {isDebug, isOnHomePage, loaderId} from './lib';
+import {isDebug, isOnHomePage, loaderId, log} from './lib';
+import {defaultApi as api} from './apiProvider';
+
+const apiSession = api.createSession();
 
 const isBodyPresent = () => Boolean(document.body);
 
@@ -74,7 +77,18 @@ const unInstallLoader = () => {
 	}
 };
 
+const setupParticipantCodeForm = () => {
+	log('TODO', 'setupParticipantCodeForm');
+};
+
 const start = async () => {
+	apiSession.then(() => {
+		log('API session created');
+	}).catch(() => {
+		setupParticipantCodeForm();
+		console.error('Failed to create API session');
+	});
+
 	await waitForBody();
 
 	if (isOnHomePage()) {
