@@ -64,6 +64,7 @@ const installLoader = () => {
 
 const unInstallLoader = () => {
 	if (loaderInstalled) {
+		loaderInstalled = false;
 		const loader = document.getElementById(loaderId);
 		if (!loader) {
 			return;
