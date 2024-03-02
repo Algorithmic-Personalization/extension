@@ -2,14 +2,23 @@ import {createTheme} from '@mui/material';
 
 const isDarkMode = Boolean(document.querySelector('html[dark]'));
 
+export const getThemeBackgroundColor = () =>
+	isDarkMode ? 'rgb(15, 15, 15)' : 'rgb(241, 241, 241)';
+
+export const getThemeContrastBackgroundColor = () =>
+	isDarkMode ? 'rgb(241, 241, 241)' : 'rgb(15, 15, 15)';
+
+export const getThemeContrastTextColor = () =>
+	isDarkMode ? 'rgb(15, 15, 15)' : 'rgb(241, 241, 241)';
+
 export const theme = createTheme({
 	palette: {
 		mode: isDarkMode ? 'dark' : 'light',
+		background: {
+			default: getThemeBackgroundColor(),
+		},
 	},
 });
-
-export const getThemeBackgroundColor = () =>
-	isDarkMode ? 'rgb(15, 15, 15)' : 'rgb(241, 241, 241)';
 
 theme.typography.h1 = {
 	fontSize: '14px',
