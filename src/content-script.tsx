@@ -1,9 +1,13 @@
 import {type SubAppCreator} from './SubApp';
 import createExtension from './createExtension';
 
+import loginApp from './subApp/loginApp';
+
+import {defaultApi as api} from './apiProvider';
+
 const subApps: SubAppCreator[] = [
-	// Add sub-apps here
+	loginApp,
 ];
 
-const extension = createExtension(subApps);
+const extension = createExtension(api)(subApps);
 extension.start().catch(console.error);
