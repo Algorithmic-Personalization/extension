@@ -77,13 +77,7 @@ export const loginApp: SubAppCreator = ({api, getElement}) => {
 			root.unmount();
 			elt.remove();
 		},
-		onUrlChange() {
-			// Do nothing
-		},
-		onConfigChange() {
-			// Do nothing
-		},
-		onLoggedInChange(state) {
+		onUpdate(state) {
 			render(state);
 		},
 	};

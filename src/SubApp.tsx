@@ -23,11 +23,8 @@ export type SubAppInstance = {
 	setup: (state: SubAppState) => Promise<Element[]>;
 	getName: () => string;
 
+	onUpdate: (state: SubAppState) => void;
 	onDestroy: (elt: HTMLElement) => void;
-
-	onUrlChange: (state: SubAppState) => void;
-	onConfigChange: (state: SubAppState) => void;
-	onLoggedInChange: (state: SubAppState) => void;
 };
 
 export type SubAppCreator = (config: SubAppConfig) => SubAppInstance;
