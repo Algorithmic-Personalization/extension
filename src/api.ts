@@ -24,7 +24,8 @@ export type Api = {
 	createSession: () => Promise<Maybe<Session>>;
 	checkParticipantCode: (participantCode: string) => Promise<boolean>;
 	setAuth: (participantCode: string) => void;
-	newSession: () => Promise<boolean>;
+	getAuth: () => string;
+	newSession: () => Promise<string>;
 	getSession: () => string | undefined;
 	ensureSession: () => Promise<void>;
 	getConfig: () => Promise<Maybe<ParticipantConfig>>;
@@ -223,10 +224,13 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 			participantCode = code;
 		},
 
+		getAuth() {
+			return participantCode;
+		},
+
 		async newSession() {
 			if (!participantCode) {
-				console.log('Missing participant code!');
-				return false;
+				throw new Error('Missing participant code!');
 			}
 
 			console.log('Creating new session');
@@ -238,12 +242,10 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 				saveToSessionStorage('sessionUuid', sessionUuid);
 				console.log('New session', sessionUuid);
 				api.sendPageView();
-				return true;
+				return res.value.uuid;
 			}
 
-			console.log('Failed to create new session:', res.message);
-
-			return false;
+			throw new Error('Failed to create new session: ' + res.message);
 		},
 
 		getSession() {

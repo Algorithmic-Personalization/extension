@@ -1,6 +1,7 @@
 import type SubAppCreator from './SubApp';
 import {type SubAppInstance, type SubAppState} from './SubApp';
 import {type Api} from './api';
+import {type ParticipantConfig} from './common/models/experimentConfig';
 import {log, isLoggedInForSure, saveToLocalStorage, getFromLocalStorage} from './lib';
 
 type ElementToWaitFor = {
@@ -9,11 +10,25 @@ type ElementToWaitFor = {
 	timeout: NodeJS.Timeout;
 };
 
+const loadPersistedConfig = () => {
+	const item = getFromLocalStorage('config');
+	if (item) {
+		return JSON.parse(item) as ParticipantConfig;
+	}
+
+	return undefined;
+};
+
 export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 	let elementsToWaitFor: ElementToWaitFor[] = [];
 	const subAppInstances: SubAppInstance[] = [];
+
+	const config = loadPersistedConfig();
+
 	const state: SubAppState = {
 		loggedInYouTube: getFromLocalStorage('loggedInYouTube') === 'true',
+		config,
+		loggedInExtension: Boolean(config),
 	};
 
 	let previousUrl: string | undefined;
@@ -64,6 +79,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 
 		if (newState.config) {
 			state.loggedInExtension = true;
+			saveToLocalStorage('config', JSON.stringify(newState.config));
 		}
 
 		for (const app of subAppInstances) {
@@ -106,6 +122,26 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 		}).catch(err => {
 			log('error', 'checking if logged in', err);
 		});
+
+		if (api.getAuth()) {
+			if (!state.config) {
+				api.getConfig().then(cfg => {
+					if (cfg.kind === 'Success') {
+						triggerUpdate({config: cfg.value});
+					} else {
+						console.error('could not get config:', cfg.message);
+					}
+				}, err => {
+					throw err as Error;
+				});
+			}
+
+			api.newSession().then(uuid => {
+				log('New session created:', uuid);
+			}, err => {
+				console.error('Error creating new session:', err);
+			});
+		}
 
 		// TODO: watch for logout and disable API in that case
 	};
