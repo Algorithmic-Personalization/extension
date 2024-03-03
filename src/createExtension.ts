@@ -1,7 +1,7 @@
 import type SubAppCreator from './SubApp';
 import {type SubAppInstance, type SubAppState} from './SubApp';
 import {type Api} from './api';
-import {log, isLoggedInForSure} from './lib';
+import {log, isLoggedInForSure, saveToLocalStorage, getFromLocalStorage} from './lib';
 
 type ElementToWaitFor = {
 	selector: string;
@@ -13,7 +13,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 	let elementsToWaitFor: ElementToWaitFor[] = [];
 	const subAppInstances: SubAppInstance[] = [];
 	const state: SubAppState = {
-		loggedInYouTube: false,
+		loggedInYouTube: getFromLocalStorage('loggedInYouTube') === 'true',
 	};
 
 	let previousUrl: string | undefined;
@@ -81,6 +81,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 
 		isLoggedInForSure().then(loggedIn => {
 			const isLoggedIn = loggedIn === 'yes';
+			saveToLocalStorage('loggedInYouTube', isLoggedIn ? 'true' : 'false');
 
 			if (state.loggedInYouTube !== isLoggedIn) {
 				state.loggedInYouTube = isLoggedIn;
@@ -92,6 +93,8 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 		}).catch(err => {
 			log('error', 'checking if logged in', err);
 		});
+
+		// TODO: watch for logout and disable API in that case
 	};
 
 	return {
