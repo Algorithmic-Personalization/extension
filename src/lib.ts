@@ -401,4 +401,29 @@ export const deleteFromSessionStorage = (key: string) => {
 	sessionStorage.removeItem(namespace + key);
 };
 
+export const cleanLocalStorage = () => {
+	const keys = Object.keys(localStorage);
+
+	for (const key of keys) {
+		if (key.startsWith(namespace)) {
+			localStorage.removeItem(key);
+		}
+	}
+};
+
+export const cleanSessionStorage = () => {
+	const keys = Object.keys(sessionStorage);
+
+	for (const key of keys) {
+		if (key.startsWith(namespace)) {
+			sessionStorage.removeItem(key);
+		}
+	}
+};
+
+export const cleanStorage = () => {
+	cleanLocalStorage();
+	cleanSessionStorage();
+};
+
 export const loaderId = 'ytdpnl-loader';

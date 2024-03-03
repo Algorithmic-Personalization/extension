@@ -31,6 +31,10 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 		loggedInExtension: Boolean(config),
 	};
 
+	api.addOnLogoutListener(() => {
+		triggerUpdate({config: undefined});
+	});
+
 	let previousUrl: string | undefined;
 
 	const onUrlChange = (url: string) => {
@@ -87,6 +91,8 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 			state.loggedInExtension = false;
 			saveToLocalStorage('config', '');
 		}
+
+		Object.assign(state, newState);
 
 		for (const app of subAppInstances) {
 			app.onUpdate(state).then(() => {

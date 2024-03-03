@@ -16,9 +16,18 @@ import {
 	getParticipantChannelSource,
 } from './common/clientRoutes';
 
-import {getFromLocalStorage, getFromSessionStorage, saveToLocalStorage, saveToSessionStorage} from './lib';
+import {
+	deleteFromLocalStorage,
+	deleteFromSessionStorage,
+	getFromLocalStorage,
+	getFromSessionStorage,
+	saveToLocalStorage,
+	saveToSessionStorage,
+	cleanStorage,
+} from './lib';
 
 export type Api = {
+	addOnLogoutListener: (listener: () => void) => void;
 	sendPageView: () => void;
 	setTabActive: (active: boolean | undefined) => void;
 	createSession: () => Promise<Maybe<Session>>;
@@ -159,6 +168,8 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 	let participantCode = getFromLocalStorage('participantCode') ?? overrideParticipantCode ?? '';
 	let sessionUuid = getFromSessionStorage('sessionUuid') ?? '';
 	let sessionPromise: Promise<Maybe<Session>> | undefined;
+
+	const onLogOutListeners: Array<() => void> = [];
 
 	const storeEvent = (event: Event) => {
 		const storedEvents = loadStoredEvents();
@@ -313,12 +324,17 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 		},
 
 		logout() {
-			localStorage.removeItem('participantCode');
-			localStorage.removeItem(eventsStorageKey);
-			sessionStorage.removeItem('sessionUuid');
-			sessionStorage.removeItem('cfg');
+			deleteFromLocalStorage('participantCode');
+			deleteFromLocalStorage(eventsStorageKey);
+			deleteFromSessionStorage('sessionUuid');
+			deleteFromSessionStorage('cfg');
 			participantCode = '';
 			sessionUuid = '';
+			cleanStorage();
+
+			for (const listener of onLogOutListeners) {
+				listener();
+			}
 		},
 
 		sendPageView() {
@@ -348,6 +364,10 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 			}
 
 			return res.value.channelId;
+		},
+
+		addOnLogoutListener(listener: () => void) {
+			onLogOutListeners.push(listener);
 		},
 	};
 
