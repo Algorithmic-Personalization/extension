@@ -1,7 +1,7 @@
 import type SubAppCreator from './SubApp';
 import {type SubAppInstance, type SubAppState} from './SubApp';
 import {type Api} from './api';
-import {log} from './lib';
+import {log, isLoggedInForSure} from './lib';
 
 type ElementToWaitFor = {
 	selector: string;
@@ -78,6 +78,20 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 				log('error', 'setting up sub-app', instance.getName(), err);
 			});
 		}
+
+		isLoggedInForSure().then(loggedIn => {
+			const isLoggedIn = loggedIn === 'yes';
+
+			if (state.loggedInYouTube !== isLoggedIn) {
+				state.loggedInYouTube = isLoggedIn;
+
+				for (const app of subAppInstances) {
+					app.onUpdate(state);
+				}
+			}
+		}).catch(err => {
+			log('error', 'checking if logged in', err);
+		});
 	};
 
 	return {
