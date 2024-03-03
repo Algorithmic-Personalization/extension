@@ -92,8 +92,6 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 			saveToLocalStorage('config', '');
 		}
 
-		Object.assign(state, newState);
-
 		for (const app of subAppInstances) {
 			app.onUpdate(state).then(() => {
 				log('Sub-app', app.getName(), 'updated successfully');
