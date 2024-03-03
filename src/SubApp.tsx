@@ -20,11 +20,8 @@ export type SubAppState = {
 };
 
 export type SubAppInstance = {
-	showOnPage: (url: URL) => boolean;
-	setup: (state: SubAppState) => Promise<Element[]>;
 	getName: () => string;
-
-	onUpdate: (state: SubAppState) => void;
+	onUpdate: (state: SubAppState) => Promise<Element[]>;
 	onDestroy: (elt: HTMLElement) => void;
 };
 

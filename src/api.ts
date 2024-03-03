@@ -233,14 +233,11 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 				throw new Error('Missing participant code!');
 			}
 
-			console.log('Creating new session');
-
 			const res = await this.createSession();
 
 			if (res.kind === 'Success') {
 				sessionUuid = res.value.uuid;
 				saveToSessionStorage('sessionUuid', sessionUuid);
-				console.log('New session', sessionUuid);
 				api.sendPageView();
 				return res.value.uuid;
 			}

@@ -35,6 +35,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 
 	const onUrlChange = (url: string) => {
 		log('URL changed to', url);
+		triggerUpdate({url});
 	};
 
 	const observer = new MutationObserver(() => {
@@ -82,8 +83,17 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 			saveToLocalStorage('config', JSON.stringify(newState.config));
 		}
 
+		if (Object.prototype.hasOwnProperty.call(newState, 'config') && !newState.config) {
+			state.loggedInExtension = false;
+			saveToLocalStorage('config', '');
+		}
+
 		for (const app of subAppInstances) {
-			app.onUpdate(state);
+			app.onUpdate(state).then(() => {
+				log('Sub-app', app.getName(), 'updated successfully');
+			}, err => {
+				console.error('Error updating sub-app', app.getName(), ':', err);
+			});
 		}
 	};
 
@@ -101,11 +111,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 
 			subAppInstances.push(instance);
 
-			instance.setup(state).then(_elements => {
-				log('Sub-app', instance.getName(), 'setup complete');
-			}).catch(err => {
-				log('error', 'setting up sub-app', instance.getName(), err);
-			});
+			triggerUpdate(state);
 		}
 
 		isLoggedInForSure().then(loggedIn => {
@@ -113,11 +119,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 			saveToLocalStorage('loggedInYouTube', isLoggedIn ? 'true' : 'false');
 
 			if (state.loggedInYouTube !== isLoggedIn) {
-				state.loggedInYouTube = isLoggedIn;
-
-				for (const app of subAppInstances) {
-					app.onUpdate(state);
-				}
+				triggerUpdate({loggedInYouTube: isLoggedIn});
 			}
 		}).catch(err => {
 			log('error', 'checking if logged in', err);

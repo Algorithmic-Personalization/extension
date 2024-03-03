@@ -164,11 +164,11 @@ export const loginApp: SubAppCreator = ({api, getElement, triggerUpdate}) => {
 		getName() {
 			return 'loginApp';
 		},
-		showOnPage: () => true,
-		async setup(state) {
-			const target = await getElement('body');
-
-			target.prepend(rootElt);
+		async onUpdate(state) {
+			if (!document.querySelector(rootElt.id)) {
+				const target = await getElement('body');
+				target.prepend(rootElt);
+			}
 
 			render(state);
 
@@ -178,9 +178,6 @@ export const loginApp: SubAppCreator = ({api, getElement, triggerUpdate}) => {
 			console.log('Destroying login app');
 			root.unmount();
 			elt.remove();
-		},
-		onUpdate(state) {
-			render(state);
 		},
 	};
 };

@@ -6,18 +6,13 @@ export const isVideoPage = (url?: string): url is string => Boolean(
 	url && new URL(url).pathname.startsWith('/watch'),
 );
 export const isOnHomePage = () => window.location.pathname === '/';
+export const isHomePage = (url: string) => new URL(url).pathname === '/';
 
 export const debug = process.env.NODE_ENV === 'development';
 export const isDebug = () => debug || localStorage.getItem('debug') === '1';
 
 export const log = (...args: any[]) => {
 	if (!isDebug()) {
-		return;
-	}
-
-	if (args.length > 0 && args[0] === 'error') {
-		console.error(args[0]);
-		console.log(...args.slice(1));
 		return;
 	}
 
