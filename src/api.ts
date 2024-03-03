@@ -1,5 +1,5 @@
 import {type ParticipantChannelSource} from './common/types/participantChannelSource';
-import {type Maybe, makeApiVerbCreator, memoizeTemporarily} from './common/util';
+import {type Maybe, makeApiVerbCreator} from './common/util';
 import type Session from './common/models/session';
 import Event, {EventType} from './common/models/event';
 import {type ParticipantConfig} from './common/models/experimentConfig';
@@ -33,8 +33,6 @@ export type Api = {
 	getChannelSource: (force?: boolean) => Promise<string>;
 	logout(): void;
 };
-
-const cache = memoizeTemporarily(1000);
 
 type StoredEvent = {
 	apiUrl: string;
@@ -189,7 +187,7 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 	const post = verb('POST');
 	const get = verb('GET');
 
-	const getConfigCached = cache(async () => get<ParticipantConfig>(getParticipantConfig, {}, headers()));
+	const getConfig = async () => get<ParticipantConfig>(getParticipantConfig, {}, headers());
 
 	const api: Api = {
 		async createSession() {
@@ -252,9 +250,7 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 			return sessionUuid === '' ? undefined : sessionUuid;
 		},
 
-		async getConfig() {
-			return getConfigCached(undefined);
-		},
+		getConfig,
 
 		async ensureSession() {
 			if (sessionUuid !== '') {

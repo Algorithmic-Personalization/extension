@@ -3,10 +3,7 @@ import {createRoot} from 'react-dom/client';
 
 import {
 	Box,
-	Button,
-	FormHelperText,
 	IconButton,
-	TextField,
 	Typography,
 } from '@mui/material';
 
@@ -17,10 +14,21 @@ import {getThemeContrastBackgroundColor, getThemeContrastTextColor} from '../the
 import {type SubAppCreator, type SubAppState, ReactAdapter} from '../SubApp';
 
 import MessageC from '../components/MessageC';
+import {getFromLocalStorage, log} from '../lib';
+import {useApi} from '../apiProvider';
 
-const LoginApp: React.FC<SubAppState> = ({loggedInExtension, loggedInYouTube}) => {
+const LoginApp: React.FC<SubAppState & {
+	triggerUpdate: (newState: Partial<SubAppState>) => void;
+}> = ({
+	loggedInExtension,
+	loggedInYouTube,
+	triggerUpdate,
+}) => {
 	const [shown, setShown] = useState(true);
-	const [error, _setError] = useState<string | undefined>();
+	const [error, setError] = useState<string | undefined>();
+	const [code, setCode] = useState(getFromLocalStorage('participantCode') ?? '');
+
+	const api = useApi();
 
 	if (loggedInExtension && loggedInYouTube) {
 		return null;
@@ -73,7 +81,33 @@ const LoginApp: React.FC<SubAppState> = ({loggedInExtension, loggedInYouTube}) =
 						Please log in to the extension with your participant code to use the YouTube Experiment extension.
 					</Typography>
 
-					<form>
+					<form onSubmit={async e => {
+						log('submitting extension login form');
+						e.preventDefault();
+						const maybeConfig = await api.getConfig();
+
+						if (maybeConfig.kind !== 'Success') {
+							setError('Failed to get configuration :(');
+							return;
+						}
+
+						const {value: config} = maybeConfig;
+
+						if (!config) {
+							setError('No configuration found in server response :(');
+							return;
+						}
+
+						api.newSession().then(s => {
+							log('New session created:', s);
+						}, e => {
+							console.error('Error creating new session:', e);
+						});
+
+						triggerUpdate({
+							config,
+						});
+					}}>
 						<Typography sx={{color: getThemeContrastTextColor()}}>
 							Participant code:
 						</Typography>
@@ -82,6 +116,10 @@ const LoginApp: React.FC<SubAppState> = ({loggedInExtension, loggedInYouTube}) =
 							style={{
 								display: 'block',
 								width: '100%',
+							}}
+							value={code}
+							onChange={e => {
+								setCode(e.target.value);
 							}}
 						/>
 
@@ -106,7 +144,7 @@ const LoginApp: React.FC<SubAppState> = ({loggedInExtension, loggedInYouTube}) =
 	);
 };
 
-export const loginApp: SubAppCreator = ({api, getElement}) => {
+export const loginApp: SubAppCreator = ({api, getElement, triggerUpdate}) => {
 	const rootElt = document.createElement('div');
 	rootElt.id = 'ytdpnl-extension-login-app';
 
@@ -115,7 +153,7 @@ export const loginApp: SubAppCreator = ({api, getElement}) => {
 	const render = (state: SubAppState) => {
 		const App = (
 			<ReactAdapter api={api}>
-				<LoginApp {...state} />
+				<LoginApp {...{...state, triggerUpdate}} />
 			</ReactAdapter>
 		);
 

@@ -59,6 +59,18 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 		});
 	};
 
+	const triggerUpdate = (newState: Partial<SubAppState>) => {
+		Object.assign(state, newState);
+
+		if (newState.config) {
+			state.loggedInExtension = true;
+		}
+
+		for (const app of subAppInstances) {
+			app.onUpdate(state);
+		}
+	};
+
 	const start = async () => {
 		log('Starting extension with', subApps.length, 'sub-apps');
 		log('Observing document for changes');
@@ -68,6 +80,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 			const instance = app({
 				api,
 				getElement,
+				triggerUpdate,
 			});
 
 			subAppInstances.push(instance);

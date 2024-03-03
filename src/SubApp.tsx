@@ -9,6 +9,7 @@ import {type Api} from './api';
 export type SubAppConfig = {
 	api: Api;
 	getElement: (selector: string) => Promise<Element>;
+	triggerUpdate: (newState: Partial<SubAppState>) => void;
 };
 
 export type SubAppState = {
