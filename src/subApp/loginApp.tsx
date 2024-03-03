@@ -84,6 +84,7 @@ const LoginApp: React.FC<SubAppState & {
 					<form onSubmit={async e => {
 						log('submitting extension login form');
 						e.preventDefault();
+						api.setAuth(code);
 						const maybeConfig = await api.getConfig();
 
 						if (maybeConfig.kind !== 'Success') {
