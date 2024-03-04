@@ -56,6 +56,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 
 	const observer = new MutationObserver(() => {
 		if (location.href !== previousUrl) {
+			api.sendPageView();
 			onUrlChange(location.href);
 			previousUrl = location.href;
 		}
