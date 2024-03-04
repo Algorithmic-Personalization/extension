@@ -13,6 +13,54 @@ import type Recommendation from '../common/types/Recommendation';
 import {type Api} from '../api';
 import {getHomeMiniatureUrl} from '../components/HomeVideoCard';
 
+type HomeVideo = {
+	videoId: string;
+	title: string;
+	url: string;
+};
+
+const getVideoTitle = (node: HTMLElement): string | undefined => {
+	const maybeTitle = node.querySelector('#video-title');
+
+	if (maybeTitle) {
+		return maybeTitle.textContent?.trim();
+	}
+
+	if (node.parentElement && node.id !== 'content') {
+		return getVideoTitle(node.parentElement);
+	}
+
+	return undefined;
+};
+
+const getHomeVideos = (): HomeVideo[] => {
+	const links: HTMLAnchorElement[] = Array.from(document.querySelectorAll('a.ytd-thumbnail[href^="/watch?v="]'));
+	const maybeRes: Array<HomeVideo | undefined> = links.map(link => {
+		const videoExp = /\?v=(.+)$/;
+		const maybeMatch = videoExp.exec(link.href);
+
+		if (!maybeMatch) {
+			return undefined;
+		}
+
+		const videoId = maybeMatch[1];
+
+		const title = getVideoTitle(link);
+
+		if (!title) {
+			return undefined;
+		}
+
+		return {
+			videoId,
+			title,
+			url: link.href,
+		};
+	});
+
+	return maybeRes.filter(Boolean) as HomeVideo[];
+};
+
 const getRecommendationsToInject = (api: Api, log: (...args: any[]) => void) => async (channelSource: string): Promise<Recommendation[]> => {
 	const getRecommendations = async (force = false): Promise<Recommendation[]> => {
 		const recommendationsSource = force ? await api.getChannelSource(force) : channelSource;
@@ -53,6 +101,7 @@ const getRecommendationsToInject = (api: Api, log: (...args: any[]) => void) => 
 const homeApp: SubAppCreator = ({api}) => {
 	let channelSource: string | undefined;
 	let injectionSource: Recommendation[] = [];
+	let homeVideos: HomeVideo[] = [];
 
 	const app: SubAppInstance = {
 		getName() {
@@ -95,6 +144,12 @@ const homeApp: SubAppCreator = ({api}) => {
 			channelSource = maybeNewChannelSource;
 
 			log('injection source data:', injectionSource);
+
+			if (homeVideos.length === 0) {
+				homeVideos = getHomeVideos().splice(0, 10);
+			}
+
+			log('home videos:', homeVideos);
 
 			return [];
 		},
