@@ -2,12 +2,14 @@ import type SubAppCreator from './SubApp';
 import {type SubAppInstance, type SubAppState} from './SubApp';
 import {type Api} from './api';
 import {type ParticipantConfig} from './common/models/experimentConfig';
+import WatchTimeEvent from './common/models/watchTimeEvent';
 import {
 	log,
 	isLoggedInForSure,
 	saveToLocalStorage,
 	getFromLocalStorage,
 	removeLoaderMask,
+	isVideoPage,
 } from './lib';
 
 type ElementToWaitFor = {
@@ -41,11 +43,82 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 		loggedInYouTube: getFromLocalStorage('loggedInYouTube') === 'true',
 		config,
 		loggedInExtension: Boolean(config),
+		url: location.href,
 	};
 
 	api.addOnLogoutListener(() => {
 		triggerUpdate({config: undefined});
 	});
+
+	const watchVideoEvents = (video: HTMLVideoElement, url: string) => {
+		let {currentTime} = video;
+		let watchTime = 0;
+		let lastDisplayedTime = 0;
+		const {src} = video;
+
+		const timeUpdate = () => {
+			const newCurrentTime = video.currentTime;
+
+			const dt = newCurrentTime - currentTime;
+
+			if (dt > 0) {
+				watchTime += dt;
+			}
+
+			if (watchTime - lastDisplayedTime > 10) {
+				lastDisplayedTime = watchTime;
+				log('watch time:', watchTime);
+			}
+
+			currentTime = video.currentTime;
+		};
+
+		video.addEventListener('timeupdate', timeUpdate);
+
+		window.addEventListener('beforeunload', () => {
+			saveWatchTime();
+		});
+
+		const saveWatchTime = () => {
+			const wt = new WatchTimeEvent(watchTime);
+			wt.url = url;
+			watchTime = 0;
+
+			api.postEvent(wt, true).then(() => {
+				log('watch time event sent successfully');
+			}, err => {
+				console.error('failed to send watch time event', err);
+			});
+		};
+
+		const loadedMetadata = () => {
+			log('video metadata loaded', video);
+			if (video.src !== src) {
+				log('video source changed to', video.src);
+				saveWatchTime();
+				video.removeEventListener('loadedmetadata', loadedMetadata);
+				video.removeEventListener('timeupdate', timeUpdate);
+			}
+		};
+
+		video.addEventListener('loadedmetadata', loadedMetadata);
+
+		log('watching video events on', video);
+	};
+
+	const setupVideoWatching = (url: string) => {
+		if (isVideoPage(url)) {
+			log('looking for a video element on', url);
+			const video = document.querySelector('video');
+
+			if (video) {
+				log('video element found:', video);
+				watchVideoEvents(video, url);
+			} else {
+				log('no video element found');
+			}
+		}
+	};
 
 	let previousUrl: string | undefined;
 
@@ -54,7 +127,17 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 		triggerUpdate({url});
 	};
 
-	const observer = new MutationObserver(() => {
+	const observer = new MutationObserver(_e => {
+		/* Useless I think
+		for (const change of e) {
+			for (const v of Array.from(change.addedNodes)) {
+				if (v.nodeName === 'VIDEO') {
+					watchVideoEvents(v as HTMLVideoElement);
+				}
+			}
+		}
+		*/
+
 		if (location.href !== previousUrl) {
 			api.sendPageView();
 			onUrlChange(location.href);
@@ -97,6 +180,10 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 
 		const updatedState = {...state, ...newState};
 
+		if (newState.url !== state.url && newState.url) {
+			setupVideoWatching(newState.url);
+		}
+
 		if (newState.config) {
 			state.loggedInExtension = true;
 
@@ -134,6 +221,8 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 	};
 
 	const start = async () => {
+		setupVideoWatching(state.url ?? '');
+
 		getElement('yt-icon#logo-icon').then(elt => {
 			log('YouTube logo found', elt);
 			elt.addEventListener('click', e => {
@@ -191,7 +280,6 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 				console.error('Error creating new session:', err);
 			});
 		}
-
 		// TODO: watch for logout and disable API in that case
 	};
 
