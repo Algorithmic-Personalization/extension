@@ -51,6 +51,9 @@ const getRecommendationsToInject = (api: Api, log: (...args: any[]) => void) => 
 };
 
 const homeApp: SubAppCreator = ({api}) => {
+	let channelSource: string | undefined;
+	let injectionSource: Recommendation[] = [];
+
 	const app: SubAppInstance = {
 		getName() {
 			return 'homeApp';
@@ -67,15 +70,31 @@ const homeApp: SubAppCreator = ({api}) => {
 
 			log('Setting up home app', state);
 
-			const {channelSource} = state.config;
+			const {channelSource: maybeNewChannelSource} = state.config;
 
-			if (!channelSource) {
+			if (!maybeNewChannelSource) {
+				log('no channel source in state, returning...');
 				return [];
 			}
 
-			const injectionsSource = await getRecommendationsToInject(api, log)(channelSource);
+			if (maybeNewChannelSource === channelSource) {
+				log('channel source unchanged, returning...');
+				return [];
+			}
 
-			log('injections source data:', injectionsSource);
+			log('got new channel source');
+
+			if (injectionSource.length > 0) {
+				log('injection source already exists, returning...');
+				return [];
+			}
+
+			log('fetching recommendations to inject...');
+
+			injectionSource = await getRecommendationsToInject(api, log)(maybeNewChannelSource);
+			channelSource = maybeNewChannelSource;
+
+			log('injection source data:', injectionSource);
 
 			return [];
 		},
