@@ -56,6 +56,11 @@ const installLoader = () => {
 		maskingDiv.appendChild(helpText);
 	}
 
+	/* TODO:
+		Watch for changes on the page to add another more
+		selective loader.
+	*/
+
 	document.body.appendChild(maskingDiv);
 	document.body.style.overflow = 'hidden';
 };
