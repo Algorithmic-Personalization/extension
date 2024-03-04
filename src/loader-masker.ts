@@ -1,9 +1,9 @@
-import {isDebug, isOnHomePage, loaderId} from './lib';
+import {isDebug, isOnHomePage, loaderId, log} from './lib';
 
 const isBodyPresent = () => Boolean(document.body);
 
-const waitForHomePageAndBody = async () => new Promise<void>(resolve => {
-	const condition = () => isOnHomePage() && isBodyPresent();
+const waitForBody = async () => new Promise<void>(resolve => {
+	const condition = () => isBodyPresent();
 
 	if (condition()) {
 		resolve();
@@ -61,10 +61,13 @@ const installLoader = () => {
 };
 
 const start = async () => {
-	await waitForHomePageAndBody();
-	installLoader();
-
-	console.log('The body is present');
+	if (isOnHomePage()) {
+		log('installing loader mask because on home page');
+		await waitForBody();
+		installLoader();
+	} else {
+		log('not installing loader mask because not on home page');
+	}
 };
 
 start().catch(e => {

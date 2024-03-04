@@ -7,6 +7,11 @@
           "matches": ["https://*.youtube.com/*", "https://*.youtu.be/*"],
           "js": ["content-script.js"],
           "run_at": "document_end"
+        },
+        {
+          "matches": ["https://*.youtube.com/*", "https://*.youtu.be/*"],
+          "js": ["loader-masker.js"],
+          "run_at": "document_start"
         }
       ],
     "permissions": [

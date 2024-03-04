@@ -6,7 +6,14 @@ import {
 	type SubAppInstance,
 	ReactAdapter,
 } from '../SubApp';
-import {imageExists, isHomePage, log, findParentById} from '../lib';
+
+import {
+	imageExists,
+	isHomePage,
+	log,
+	findParentById,
+	removeLoaderMask,
+} from '../lib';
 
 import fetchRecommendationsToInject from '../fetchYtChannelRecommendations';
 import type Recommendation from '../common/types/Recommendation';
@@ -202,7 +209,11 @@ const homeApp: SubAppCreator = ({api}) => {
 		},
 
 		async onUpdate(state, prevState) {
-			if (state.url !== prevState.url && isHomePage(state.url ?? '')) {
+			if (!isHomePage(state.url ?? '')) {
+				return [];
+			}
+
+			if (state.url !== prevState.url) {
 				triggerEvent().then(triggered => {
 					if (triggered) {
 						log('home shown event triggered upon URL change');
@@ -218,7 +229,15 @@ const homeApp: SubAppCreator = ({api}) => {
 				return [];
 			}
 
-			if (!isHomePage(state.url)) {
+			if (!state.config.channelSource) {
+				return [];
+			}
+
+			if (state.config.arm === 'control') {
+				return [];
+			}
+
+			if (state.config.phase !== 1) {
 				return [];
 			}
 
@@ -291,6 +310,8 @@ const homeApp: SubAppCreator = ({api}) => {
 				// Keep track the rest of the videos shown
 				shown.push(...homeVideos.slice(3));
 			}
+
+			removeLoaderMask();
 
 			triggerEvent().then(triggered => {
 				if (triggered) {

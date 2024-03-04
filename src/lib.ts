@@ -432,7 +432,18 @@ export const cleanStorage = () => {
 	cleanSessionStorage();
 };
 
-export const loaderId = 'ytdpnl-loader';
+export const loaderId = 'ytdpnl-loader-mask';
+
+export const removeLoaderMask = () => {
+	const mask = document.getElementById(loaderId);
+
+	if (mask) {
+		mask.remove();
+		return true;
+	}
+
+	return false;
+};
 
 export const findParentById = (elId: string) => (elt: Element): Element | undefined => {
 	const recurse = findParentById(elId);

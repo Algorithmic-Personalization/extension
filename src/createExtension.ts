@@ -2,7 +2,13 @@ import type SubAppCreator from './SubApp';
 import {type SubAppInstance, type SubAppState} from './SubApp';
 import {type Api} from './api';
 import {type ParticipantConfig} from './common/models/experimentConfig';
-import {log, isLoggedInForSure, saveToLocalStorage, getFromLocalStorage} from './lib';
+import {
+	log,
+	isLoggedInForSure,
+	saveToLocalStorage,
+	getFromLocalStorage,
+	removeLoaderMask,
+} from './lib';
 
 type ElementToWaitFor = {
 	selector: string;
@@ -12,8 +18,14 @@ type ElementToWaitFor = {
 
 const loadPersistedConfig = () => {
 	const item = getFromLocalStorage('config');
-	if (item) {
-		return JSON.parse(item) as ParticipantConfig;
+
+	try {
+		if (item) {
+			return JSON.parse(item) as ParticipantConfig;
+		}
+	} catch (err) {
+		log('Error parsing config from local storage:', {err, item});
+		return undefined;
 	}
 
 	return undefined;
@@ -80,11 +92,28 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 	};
 
 	const triggerUpdate = (newState: Partial<SubAppState>) => {
+		log('new state received:', newState);
+
 		const updatedState = {...state, ...newState};
 
 		if (newState.config) {
 			state.loggedInExtension = true;
-			saveToLocalStorage('config', JSON.stringify(newState.config));
+
+			if (!state.config) {
+				saveToLocalStorage('config', JSON.stringify(newState.config));
+			}
+		}
+
+		if (updatedState.config) {
+			if (updatedState.config.arm === 'control') {
+				removeLoaderMask();
+			}
+
+			if (updatedState.config.phase !== 1) {
+				removeLoaderMask();
+			}
+		} else {
+			removeLoaderMask();
 		}
 
 		if (Object.prototype.hasOwnProperty.call(newState, 'config') && !newState.config) {
@@ -104,6 +133,17 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 	};
 
 	const start = async () => {
+		getElement('yt-icon#logo-icon').then(elt => {
+			log('YouTube logo found', elt);
+			elt.addEventListener('click', e => {
+				log('home link clicked');
+				e.preventDefault();
+				window.location.href = 'https://www.youtube.com/';
+			});
+		}, err => {
+			console.error('Error getting home link:', err);
+		});
+
 		log('Starting extension with', subApps.length, 'sub-apps');
 		log('Observing document for changes');
 		observer.observe(document.documentElement, {childList: true, subtree: true});
