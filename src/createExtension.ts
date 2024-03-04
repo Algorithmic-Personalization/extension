@@ -46,64 +46,57 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 		url: location.href,
 	};
 
+	let watchTime = 0;
+	let lastDisplayedTime = 0;
+	let currentTime = 0;
+	let urlWatched: string | undefined;
+
+	const timeUpdate = (e: Event) => {
+		const newCurrentTime = (e.target as HTMLVideoElement).currentTime;
+
+		const dt = newCurrentTime - currentTime;
+		currentTime = newCurrentTime;
+
+		if (dt > 0) {
+			watchTime += dt;
+		}
+
+		if (watchTime - lastDisplayedTime > 10) {
+			lastDisplayedTime = watchTime;
+			log('watch time:', watchTime);
+		}
+	};
+
 	api.addOnLogoutListener(() => {
 		triggerUpdate({config: undefined});
 	});
 
 	const watchVideoEvents = (video: HTMLVideoElement, url: string) => {
-		let {currentTime} = video;
-		let watchTime = 0;
-		let lastDisplayedTime = 0;
-		const {src} = video;
-
-		const timeUpdate = () => {
-			const newCurrentTime = video.currentTime;
-
-			const dt = newCurrentTime - currentTime;
-
-			if (dt > 0) {
-				watchTime += dt;
-			}
-
-			if (watchTime - lastDisplayedTime > 10) {
-				lastDisplayedTime = watchTime;
-				log('watch time:', watchTime);
-			}
-
-			currentTime = video.currentTime;
-		};
-
+		video.removeEventListener('timeupdate', timeUpdate);
 		video.addEventListener('timeupdate', timeUpdate);
+		urlWatched = url;
+	};
 
-		window.addEventListener('beforeunload', () => {
-			saveWatchTime();
-		});
+	const saveWatchTime = () => {
+		if (urlWatched) {
+			if (watchTime > 0) {
+				log('saving watch time for', urlWatched, 'with', watchTime, 'seconds');
+				const event = new WatchTimeEvent(watchTime);
+				event.url = urlWatched;
+				api.postEvent(event, true).then(() => {
+					log('watch time event sent successfully');
+				}, err => {
+					console.error('failed to send watch time event', err);
+				});
 
-		const saveWatchTime = () => {
-			const wt = new WatchTimeEvent(watchTime);
-			wt.url = url;
-			watchTime = 0;
-
-			api.postEvent(wt, true).then(() => {
-				log('watch time event sent successfully');
-			}, err => {
-				console.error('failed to send watch time event', err);
-			});
-		};
-
-		const loadedMetadata = () => {
-			log('video metadata loaded', video);
-			if (video.src !== src) {
-				log('video source changed to', video.src);
-				saveWatchTime();
-				video.removeEventListener('loadedmetadata', loadedMetadata);
-				video.removeEventListener('timeupdate', timeUpdate);
+				watchTime = 0;
+				lastDisplayedTime = 0;
 			}
-		};
+		}
+	};
 
-		video.addEventListener('loadedmetadata', loadedMetadata);
-
-		log('watching video events on', video);
+	const onUnload = () => {
+		saveWatchTime();
 	};
 
 	const setupVideoWatching = (url: string) => {
@@ -114,6 +107,8 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 			if (video) {
 				log('video element found:', video);
 				watchVideoEvents(video, url);
+				document.removeEventListener('unload', onUnload);
+				document.addEventListener('unload', onUnload);
 			} else {
 				log('no video element found');
 			}
@@ -181,6 +176,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 		const updatedState = {...state, ...newState};
 
 		if (newState.url !== state.url && newState.url) {
+			saveWatchTime();
 			setupVideoWatching(newState.url);
 		}
 
@@ -210,9 +206,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 		}
 
 		for (const app of subAppInstances) {
-			app.onUpdate(updatedState, state).then(() => {
-				log('Sub-app', app.getName(), 'updated successfully');
-			}, err => {
+			app.onUpdate(updatedState, state).catch(err => {
 				console.error('Error updating sub-app', app.getName(), ':', err);
 			});
 
