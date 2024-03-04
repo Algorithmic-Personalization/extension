@@ -82,6 +82,7 @@ const replaceHomeVideo = (api: Api, log: (...args: any[]) => void) => (
 	videoId: string,
 	recommendation: Recommendation,
 	onPictureLoaded?: () => void,
+	onPictureErrored?: () => void,
 ): ReactRoot | undefined => {
 	const links = Array.from(document.querySelectorAll(`a.ytd-thumbnail[href="/watch?v=${videoId}"]`));
 
@@ -123,6 +124,7 @@ const replaceHomeVideo = (api: Api, log: (...args: any[]) => void) => (
 					...recommendation,
 					onClick: onInjectedVideoCardClicked,
 					onPictureLoaded,
+					onPictureErrored,
 				}} />
 		</ReactAdapter>
 	);
@@ -178,7 +180,6 @@ const homeApp: SubAppCreator = ({api}) => {
 	let injectionSource: Recommendation[] = [];
 	let homeVideos: HomeVideo[] = [];
 	const roots: ReactRoot[] = [];
-
 	const shown: RecommendationBase[] = [];
 
 	const replace = replaceHomeVideo(api, log);
@@ -290,6 +291,8 @@ const homeApp: SubAppCreator = ({api}) => {
 				return [];
 			}
 
+			const picturePromises: Array<Promise<void>> = [];
+
 			for (let i = 0; i < 3; ++i) {
 				const video = homeVideos[i];
 				const replacement = injectionSource[i];
@@ -298,18 +301,24 @@ const homeApp: SubAppCreator = ({api}) => {
 					throw new Error('video or replacement is undefined - should never happen');
 				}
 
-				const root = replace(video.videoId, replacement);
+				const picturePromise = new Promise<void>((resolve, reject) => {
+					const root = replace(video.videoId, replacement, resolve, reject);
 
-				if (root) {
-					roots.push(root);
-					shown.push(replacement);
-				} else {
-					shown.push(video);
-				}
+					if (root) {
+						roots.push(root);
+						shown.push(replacement);
+					} else {
+						shown.push(video);
+					}
+				});
+
+				picturePromises.push(picturePromise);
 
 				// Keep track the rest of the videos shown
 				shown.push(...homeVideos.slice(3));
 			}
+
+			await Promise.allSettled(picturePromises);
 
 			removeLoaderMask();
 
