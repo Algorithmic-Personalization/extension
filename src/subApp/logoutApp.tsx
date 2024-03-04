@@ -7,7 +7,7 @@ import {
 	type SubAppInstance,
 	ReactAdapter,
 } from '../SubApp';
-import {Link} from '@mui/material';
+import {Link, Typography} from '@mui/material';
 
 import {useApi} from '../apiProvider';
 
@@ -25,7 +25,7 @@ const LogoutApp: React.FC<SubAppState & {
 
 	return (
 		<ReactAdapter api={api}>
-			<Link
+			<Typography
 				onClick={() => {
 					api.logout();
 					triggerUpdate({config: undefined});
@@ -43,8 +43,8 @@ const LogoutApp: React.FC<SubAppState & {
 					textDecoration: 'none',
 				}}
 			>
-				Log out of YouTube Experiment extension
-			</Link>
+				log out of YouTube Experiment extension
+			</Typography>
 		</ReactAdapter>
 	);
 };

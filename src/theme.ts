@@ -17,6 +17,9 @@ export const theme = createTheme({
 		background: {
 			default: getThemeBackgroundColor(),
 		},
+		error: {
+			main: '#e57373',
+		},
 	},
 });
 

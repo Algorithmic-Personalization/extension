@@ -39,13 +39,18 @@ const LoginApp: React.FC<SubAppState & {
 	}
 
 	return (
-		<Box sx={{position: 'relative'}}>
+		<Box sx={{
+			position: 'absolute',
+			zIndex: 10000,
+			top: 0,
+			bottom: 0,
+			left: 0,
+			right: 0,
+			display: 'flex',
+			alignItems: 'center',
+			justifyContent: 'center',
+		}}>
 			<Box sx={{
-				position: 'fixed',
-				top: '50%',
-				left: '50%',
-				transform: 'translate(-50%, -75%)',
-				zIndex: 10000,
 				backgroundColor: getThemeContrastBackgroundColor(),
 				color: getThemeContrastTextColor(),
 				padding: 4,
@@ -77,7 +82,10 @@ const LoginApp: React.FC<SubAppState & {
 					color: getThemeContrastTextColor(),
 					p: 2,
 				}}>
-					<Typography sx={{color: getThemeContrastTextColor()}}>
+					<Typography sx={{
+						color: getThemeContrastTextColor(),
+						mb: 2,
+					}}>
 						Please log in to the extension with your participant code to use the YouTube Experiment extension.
 					</Typography>
 
@@ -88,7 +96,7 @@ const LoginApp: React.FC<SubAppState & {
 						const maybeConfig = await api.getConfig();
 
 						if (maybeConfig.kind !== 'Success') {
-							setError('Failed to get configuration :(');
+							setError('Failed to get configuration, please make sure your participant code is valid or try again later.');
 							return;
 						}
 
@@ -117,6 +125,12 @@ const LoginApp: React.FC<SubAppState & {
 							style={{
 								display: 'block',
 								width: '100%',
+								padding: '1rem',
+								borderRadius: 2,
+								marginTop: 2,
+								marginBottom: 2,
+								border: '1px solid #ccc',
+								outline: 'none',
 							}}
 							value={code}
 							onChange={e => {
@@ -127,17 +141,23 @@ const LoginApp: React.FC<SubAppState & {
 						<Typography sx={{
 							fontSize: '1rem',
 							color: getThemeContrastTextColor(),
+							mb: 2,
 						}}>
 							This is the code that has been give to you by e-mail.
 						</Typography>
 
 						<Box sx={{mt: 2}}>
-							<button type='submit'>
+							<button type='submit' style={{padding: 2}}>
 								Submit
 							</button>
 						</Box>
 
-						<MessageC message={error} type='error' />
+						<MessageC message={error} type='error' sx={{
+							width: '100%',
+							borderRadius: 1,
+							mt: 2,
+							mb: 0,
+						}}/>
 					</form>
 				</Box>)}
 			</Box>
