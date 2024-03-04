@@ -6,7 +6,13 @@ export const isVideoPage = (url?: string): url is string => Boolean(
 	url && new URL(url).pathname.startsWith('/watch'),
 );
 export const isOnHomePage = () => window.location.pathname === '/';
-export const isHomePage = (url: string) => new URL(url).pathname === '/';
+export const isHomePage = (url: string) => {
+	try {
+		return new URL(url).pathname === '/';
+	} catch {
+		return false;
+	}
+};
 
 export const debug = process.env.NODE_ENV === 'development';
 export const isDebug = () => debug || localStorage.getItem('debug') === '1';
@@ -427,3 +433,17 @@ export const cleanStorage = () => {
 };
 
 export const loaderId = 'ytdpnl-loader';
+
+export const findParentById = (elId: string) => (elt: Element): Element | undefined => {
+	const recurse = findParentById(elId);
+
+	if (elt.id === elId) {
+		return elt;
+	}
+
+	if (elt.parentElement) {
+		return recurse(elt.parentElement);
+	}
+
+	return undefined;
+};

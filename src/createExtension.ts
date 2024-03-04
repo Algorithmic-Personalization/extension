@@ -80,7 +80,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 	};
 
 	const triggerUpdate = (newState: Partial<SubAppState>) => {
-		Object.assign(state, newState);
+		const updatedState = {...state, ...newState};
 
 		if (newState.config) {
 			state.loggedInExtension = true;
@@ -93,11 +93,13 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 		}
 
 		for (const app of subAppInstances) {
-			app.onUpdate(state).then(() => {
+			app.onUpdate(updatedState, state).then(() => {
 				log('Sub-app', app.getName(), 'updated successfully');
 			}, err => {
 				console.error('Error updating sub-app', app.getName(), ':', err);
 			});
+
+			Object.assign(state, updatedState);
 		}
 	};
 

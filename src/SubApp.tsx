@@ -21,7 +21,7 @@ export type SubAppState = {
 
 export type SubAppInstance = {
 	getName: () => string;
-	onUpdate: (state: SubAppState) => Promise<Element[]>;
+	onUpdate: (state: SubAppState, prevState: SubAppState) => Promise<Element[]>;
 	onDestroy: (elt: HTMLElement) => void;
 };
 

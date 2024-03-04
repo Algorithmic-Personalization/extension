@@ -1,17 +1,22 @@
-// D import React from 'react';
+import React from 'react';
+import {createRoot, type Root as ReactDomRoot} from 'react-dom/client';
 
 import {
 	type SubAppCreator,
-	type SubAppState,
 	type SubAppInstance,
-// D	ReactAdapter,
+	ReactAdapter,
 } from '../SubApp';
-import {imageExists, isHomePage, log} from '../lib';
+import {imageExists, isHomePage, log, findParentById} from '../lib';
 
 import fetchRecommendationsToInject from '../fetchYtChannelRecommendations';
 import type Recommendation from '../common/types/Recommendation';
+import {type RecommendationBase} from '../common/types/Recommendation';
+
 import {type Api} from '../api';
-import {getHomeMiniatureUrl} from '../components/HomeVideoCard';
+import {Event as AppEvent, EventType} from '../common/models/event';
+
+import HomeVideoCard, {getHomeMiniatureUrl} from '../components/HomeVideoCard';
+import HomeShownEvent from '../common/models/homeShownEvent';
 
 type HomeVideo = {
 	videoId: string;
@@ -61,6 +66,69 @@ const getHomeVideos = (): HomeVideo[] => {
 	return maybeRes.filter(Boolean) as HomeVideo[];
 };
 
+type ReactRoot = {
+	elt: Element;
+	root: ReactDomRoot;
+};
+
+const replaceHomeVideo = (api: Api, log: (...args: any[]) => void) => (
+	videoId: string,
+	recommendation: Recommendation,
+	onPictureLoaded?: () => void,
+): ReactRoot | undefined => {
+	const links = Array.from(document.querySelectorAll(`a.ytd-thumbnail[href="/watch?v=${videoId}"]`));
+
+	if (links.length === 0) {
+		console.error('could not find link for', videoId);
+		return undefined;
+	}
+
+	if (links.length > 1) {
+		console.error('found multiple links for', videoId);
+		return undefined;
+	}
+
+	const [link] = links;
+
+	console.log('link for', videoId, link, 'to replace with', recommendation);
+
+	const parent = findParentById('content')(link);
+
+	if (!parent) {
+		console.error('could not find parent for', videoId);
+		return undefined;
+	}
+
+	console.log('parent for', videoId, parent);
+
+	const onInjectedVideoCardClicked = async () => {
+		const event = new AppEvent();
+		event.type = EventType.HOME_INJECTED_TILE_CLICKED;
+		event.url = recommendation.url;
+		event.context = window.location.href;
+		void api.postEvent(event, true).catch(log);
+	};
+
+	const card = (
+		<ReactAdapter api={api}>
+			<HomeVideoCard {
+				...{
+					...recommendation,
+					onClick: onInjectedVideoCardClicked,
+					onPictureLoaded,
+				}} />
+		</ReactAdapter>
+	);
+
+	const root = createRoot(parent);
+	root.render(card);
+
+	return {
+		elt: parent,
+		root,
+	};
+};
+
 const getRecommendationsToInject = (api: Api, log: (...args: any[]) => void) => async (channelSource: string): Promise<Recommendation[]> => {
 	const getRecommendations = async (force = false): Promise<Recommendation[]> => {
 		const recommendationsSource = force ? await api.getChannelSource(force) : channelSource;
@@ -102,13 +170,50 @@ const homeApp: SubAppCreator = ({api}) => {
 	let channelSource: string | undefined;
 	let injectionSource: Recommendation[] = [];
 	let homeVideos: HomeVideo[] = [];
+	const roots: ReactRoot[] = [];
+
+	const shown: RecommendationBase[] = [];
+
+	const replace = replaceHomeVideo(api, log);
+
+	const triggerEvent = async (): Promise<boolean> => {
+		if (shown.length === 0) {
+			return false;
+		}
+
+		if (injectionSource.length === 0) {
+			return false;
+		}
+
+		const event = new HomeShownEvent(shown, injectionSource);
+
+		return api.postEvent(event, true).then(() => {
+			log('home shown event sent successfully');
+			return true;
+		}, err => {
+			console.error('failed to send home shown event', err);
+			return false;
+		});
+	};
 
 	const app: SubAppInstance = {
 		getName() {
 			return 'homeApp';
 		},
 
-		async onUpdate(state: SubAppState) {
+		async onUpdate(state, prevState) {
+			if (state.url !== prevState.url && isHomePage(state.url ?? '')) {
+				triggerEvent().then(triggered => {
+					if (triggered) {
+						log('home shown event triggered upon URL change');
+					} else {
+						log('home shown event not triggered upon URL change, app may not be ready');
+					}
+				}, err => {
+					console.error('failed to trigger home shown event upon URL change', err);
+				});
+			}
+
 			if (!state.url || !state.config) {
 				return [];
 			}
@@ -150,6 +255,52 @@ const homeApp: SubAppCreator = ({api}) => {
 			}
 
 			log('home videos:', homeVideos);
+
+			if (homeVideos.length < 3) {
+				console.error('not enough videos to replace');
+				return [];
+			}
+
+			if (injectionSource.length < 3) {
+				console.error('not enough recommendations to inject');
+				return [];
+			}
+
+			if (shown.length > 0) {
+				log('already replaced videos, returning...');
+				return [];
+			}
+
+			for (let i = 0; i < 3; ++i) {
+				const video = homeVideos[i];
+				const replacement = injectionSource[i];
+
+				if (!video || !replacement) {
+					throw new Error('video or replacement is undefined - should never happen');
+				}
+
+				const root = replace(video.videoId, replacement);
+
+				if (root) {
+					roots.push(root);
+					shown.push(replacement);
+				} else {
+					shown.push(video);
+				}
+
+				// Keep track the rest of the videos shown
+				shown.push(...homeVideos.slice(3));
+			}
+
+			triggerEvent().then(triggered => {
+				if (triggered) {
+					log('home shown event triggered successfully upon app initialization');
+				} else {
+					console.error('home shown event not triggered upon app initialization, something went wrong');
+				}
+			}, err => {
+				console.error('failed to trigger home shown event upon update', err);
+			});
 
 			return [];
 		},
