@@ -7,7 +7,7 @@ import {
 	type SubAppInstance,
 	ReactAdapter,
 } from '../SubApp';
-import {Link, Typography} from '@mui/material';
+import {Typography} from '@mui/material';
 
 import {useApi} from '../apiProvider';
 
