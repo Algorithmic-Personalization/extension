@@ -98,8 +98,6 @@ const replaceHomeVideo = (api: Api, log: (...args: any[]) => void) => (
 
 	const [link] = links;
 
-	console.log('link for', videoId, link, 'to replace with', recommendation);
-
 	const parent = findParentById('content')(link);
 
 	if (!parent) {
@@ -107,14 +105,14 @@ const replaceHomeVideo = (api: Api, log: (...args: any[]) => void) => (
 		return undefined;
 	}
 
-	console.log('parent for', videoId, parent);
-
 	const onInjectedVideoCardClicked = async () => {
 		const event = new AppEvent();
 		event.type = EventType.HOME_INJECTED_TILE_CLICKED;
 		event.url = recommendation.url;
 		event.context = window.location.href;
-		void api.postEvent(event, true).catch(log);
+		void api.postEvent(event, true).catch(err => {
+			log('failed to send home injected tile clicked event, will be retried', err);
+		});
 	};
 
 	const card = (
