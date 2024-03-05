@@ -182,6 +182,8 @@ const homeApp: SubAppCreator = ({api}) => {
 	const roots: ReactRoot[] = [];
 	const shown: RecommendationBase[] = [];
 
+	let initializationAttempted = false;
+
 	const replace = replaceHomeVideo(api, log);
 
 	const triggerEvent = async (): Promise<boolean> => {
@@ -212,6 +214,83 @@ const homeApp: SubAppCreator = ({api}) => {
 		});
 	};
 
+	const initialize = async (maybeNewChannelSource: string) => {
+		initializationAttempted = true;
+
+		log('fetching recommendations to inject...');
+
+		replacementSource = await getRecommendationsToInject(api, log)(maybeNewChannelSource);
+		channelSource = maybeNewChannelSource;
+
+		log('injection source data:', replacementSource);
+
+		if (homeVideos.length === 0) {
+			homeVideos = getHomeVideos().splice(0, 10);
+		}
+
+		log('home videos:', homeVideos);
+
+		if (homeVideos.length < 3) {
+			console.error('not enough videos to replace');
+			return [];
+		}
+
+		if (replacementSource.length < 3) {
+			console.error('not enough recommendations to inject');
+			return [];
+		}
+
+		if (shown.length > 0) {
+			log('already replaced videos, returning...', {shown});
+			return [];
+		}
+
+		const picturePromises: Array<Promise<void>> = [];
+
+		for (let i = 0; i < 3; ++i) {
+			const video = homeVideos[i];
+			const replacement = replacementSource[i];
+
+			if (!video || !replacement) {
+				throw new Error('video or replacement is undefined - should never happen');
+			}
+
+			const picturePromise = new Promise<void>((resolve, reject) => {
+				const root = replace(video.videoId, replacement, resolve, reject);
+
+				if (root) {
+					log('video', video, 'replaced with', replacement, 'successfully');
+					roots.push(root);
+					shown.push(replacement);
+				} else {
+					log('failed to replace video', video, 'with', replacement);
+					shown.push(video);
+				}
+			});
+
+			picturePromises.push(picturePromise);
+		}
+
+		// Keep track the rest of the videos shown
+		shown.push(...homeVideos.slice(3));
+
+		await Promise.allSettled(picturePromises);
+
+		removeLoaderMask();
+
+		triggerEvent().then(triggered => {
+			if (triggered) {
+				log('home shown event triggered successfully upon app initialization');
+			} else {
+				console.error('home shown event not triggered upon app initialization, something went wrong');
+			}
+		}, err => {
+			console.error('failed to trigger home shown event upon update', err);
+		});
+
+		return [];
+	};
+
 	const app: SubAppInstance = {
 		getName() {
 			return 'homeApp';
@@ -222,7 +301,7 @@ const homeApp: SubAppCreator = ({api}) => {
 				return [];
 			}
 
-			if (state.url !== prevState.url) {
+			if (state.url !== prevState.url && isHomePage(state.url ?? '')) {
 				triggerEvent().then(triggered => {
 					if (triggered) {
 						log('home shown event triggered upon URL change');
@@ -232,6 +311,11 @@ const homeApp: SubAppCreator = ({api}) => {
 				}, err => {
 					console.error('failed to trigger home shown event upon URL change', err);
 				});
+			}
+
+			if (initializationAttempted) {
+				log('home app already initialized, returning...');
+				return [];
 			}
 
 			if (!state.url || !state.config) {
@@ -271,75 +355,8 @@ const homeApp: SubAppCreator = ({api}) => {
 				return [];
 			}
 
-			log('fetching recommendations to inject...');
-
-			replacementSource = await getRecommendationsToInject(api, log)(maybeNewChannelSource);
-			channelSource = maybeNewChannelSource;
-
-			log('injection source data:', replacementSource);
-
-			if (homeVideos.length === 0) {
-				homeVideos = getHomeVideos().splice(0, 10);
-			}
-
-			log('home videos:', homeVideos);
-
-			if (homeVideos.length < 3) {
-				console.error('not enough videos to replace');
-				return [];
-			}
-
-			if (replacementSource.length < 3) {
-				console.error('not enough recommendations to inject');
-				return [];
-			}
-
-			if (shown.length > 0) {
-				log('already replaced videos, returning...', {shown});
-				return [];
-			}
-
-			const picturePromises: Array<Promise<void>> = [];
-
-			for (let i = 0; i < 3; ++i) {
-				const video = homeVideos[i];
-				const replacement = replacementSource[i];
-
-				if (!video || !replacement) {
-					throw new Error('video or replacement is undefined - should never happen');
-				}
-
-				const picturePromise = new Promise<void>((resolve, reject) => {
-					const root = replace(video.videoId, replacement, resolve, reject);
-
-					if (root) {
-						log('video', video, 'replaced with', replacement, 'successfully');
-						roots.push(root);
-						shown.push(replacement);
-					} else {
-						log('failed to replace video', video, 'with', replacement);
-						shown.push(video);
-					}
-				});
-
-				picturePromises.push(picturePromise);
-			}
-
-			// Keep track the rest of the videos shown
-			shown.push(...homeVideos.slice(3));
-
-			await Promise.allSettled(picturePromises);
-
-			removeLoaderMask();
-
-			triggerEvent().then(triggered => {
-				if (triggered) {
-					log('home shown event triggered successfully upon app initialization');
-				} else {
-					console.error('home shown event not triggered upon app initialization, something went wrong');
-				}
-			}, err => {
-				console.error('failed to trigger home shown event upon update', err);
+			initialize(maybeNewChannelSource).catch(err => {
+				console.error('failed to initialize home app', err);
 			});
 
 			return [];
