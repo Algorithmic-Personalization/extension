@@ -177,7 +177,7 @@ const getRecommendationsToInject = (api: Api, log: (...args: any[]) => void) => 
 
 const homeApp: SubAppCreator = ({api}) => {
 	let channelSource: string | undefined;
-	let injectionSource: Recommendation[] = [];
+	let replacementSource: Recommendation[] = [];
 	let homeVideos: HomeVideo[] = [];
 	const roots: ReactRoot[] = [];
 	const shown: RecommendationBase[] = [];
@@ -189,11 +189,19 @@ const homeApp: SubAppCreator = ({api}) => {
 			return false;
 		}
 
-		if (injectionSource.length === 0) {
+		if (replacementSource.length === 0) {
 			return false;
 		}
 
-		const event = new HomeShownEvent(shown, injectionSource);
+		if (homeVideos.length === 0) {
+			return false;
+		}
+
+		const event = new HomeShownEvent(
+			homeVideos.slice(0, 10),
+			replacementSource,
+			shown,
+		);
 
 		return api.postEvent(event, true).then(() => {
 			log('home shown event sent successfully');
@@ -258,17 +266,17 @@ const homeApp: SubAppCreator = ({api}) => {
 
 			log('got new channel source');
 
-			if (injectionSource.length > 0) {
+			if (replacementSource.length > 0) {
 				log('injection source already exists, returning...');
 				return [];
 			}
 
 			log('fetching recommendations to inject...');
 
-			injectionSource = await getRecommendationsToInject(api, log)(maybeNewChannelSource);
+			replacementSource = await getRecommendationsToInject(api, log)(maybeNewChannelSource);
 			channelSource = maybeNewChannelSource;
 
-			log('injection source data:', injectionSource);
+			log('injection source data:', replacementSource);
 
 			if (homeVideos.length === 0) {
 				homeVideos = getHomeVideos().splice(0, 10);
@@ -281,13 +289,13 @@ const homeApp: SubAppCreator = ({api}) => {
 				return [];
 			}
 
-			if (injectionSource.length < 3) {
+			if (replacementSource.length < 3) {
 				console.error('not enough recommendations to inject');
 				return [];
 			}
 
 			if (shown.length > 0) {
-				log('already replaced videos, returning...');
+				log('already replaced videos, returning...', {shown});
 				return [];
 			}
 
@@ -295,7 +303,7 @@ const homeApp: SubAppCreator = ({api}) => {
 
 			for (let i = 0; i < 3; ++i) {
 				const video = homeVideos[i];
-				const replacement = injectionSource[i];
+				const replacement = replacementSource[i];
 
 				if (!video || !replacement) {
 					throw new Error('video or replacement is undefined - should never happen');
@@ -305,18 +313,20 @@ const homeApp: SubAppCreator = ({api}) => {
 					const root = replace(video.videoId, replacement, resolve, reject);
 
 					if (root) {
+						log('video', video, 'replaced with', replacement, 'successfully');
 						roots.push(root);
 						shown.push(replacement);
 					} else {
+						log('failed to replace video', video, 'with', replacement);
 						shown.push(video);
 					}
 				});
 
 				picturePromises.push(picturePromise);
-
-				// Keep track the rest of the videos shown
-				shown.push(...homeVideos.slice(3));
 			}
+
+			// Keep track the rest of the videos shown
+			shown.push(...homeVideos.slice(3));
 
 			await Promise.allSettled(picturePromises);
 
