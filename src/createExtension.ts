@@ -230,6 +230,10 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 			removeLoaderMask();
 		}
 
+		if (!updatedState.loggedInYouTube) {
+			removeLoaderMask();
+		}
+
 		if (Object.prototype.hasOwnProperty.call(newState, 'config') && !newState.config) {
 			updatedState.loggedInExtension = false;
 			saveToLocalStorage('config', '');

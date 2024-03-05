@@ -299,6 +299,10 @@ const homeApp: SubAppCreator = ({api}) => {
 				return [];
 			}
 
+			if (!state.loggedInYouTube) {
+				return [];
+			}
+
 			if (state.url !== prevState.url && isHomePage(state.url ?? '')) {
 				triggerEvent().then(triggered => {
 					if (triggered) {

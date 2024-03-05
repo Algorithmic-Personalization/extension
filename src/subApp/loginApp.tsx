@@ -38,6 +38,13 @@ const LoginApp: React.FC<SubAppState & {
 		return null;
 	}
 
+	const hide = () => {
+		setShown(false);
+		setTimeout(() => {
+			setShown(true);
+		}, 1000 * 60 * 5);
+	};
+
 	return (
 		<Box sx={{
 			position: 'absolute',
@@ -59,12 +66,7 @@ const LoginApp: React.FC<SubAppState & {
 				<Box sx={{textAlign: 'right'}}>
 					<IconButton
 						size='large'
-						onClick={() => {
-							setShown(false);
-							setTimeout(() => {
-								setShown(true);
-							}, 1000 * 60 * 5);
-						}}
+						onClick={hide}
 						sx={{
 							color: getThemeContrastTextColor(),
 						}}
@@ -75,16 +77,30 @@ const LoginApp: React.FC<SubAppState & {
 				<Typography variant='h4' sx={{m: 2, color: getThemeContrastTextColor()}}>
 					Welcome to the YouTube Experiment extension!
 				</Typography>
-				{((!loggedInYouTube) && <Typography sx={{m: 2, color: getThemeContrastTextColor()}}>
-					Please log in to YouTube to use the YouTube Experiment extension.
-				</Typography>)}
+				{((!loggedInYouTube) && (<Box>
+					<Typography sx={{m: 2, color: getThemeContrastTextColor()}}>
+						Please log in to YouTube to use the YouTube Experiment extension.
+					</Typography>
+					<Typography
+						onClick={hide}
+						sx={{
+							color: getThemeContrastTextColor(),
+							m: 2,
+							mb: 4,
+							fontSize: '1rem',
+							cursor: 'pointer',
+							textDecoration: 'underline',
+						}}>
+						You can close this window and use YouTube&apos;s login button.
+					</Typography>
+				</Box>))}
 				{((!loggedInExtension) && <Box sx={{
 					color: getThemeContrastTextColor(),
 					p: 2,
 				}}>
 					<Typography sx={{
 						color: getThemeContrastTextColor(),
-						mb: 2,
+						mb: 1,
 					}}>
 						Please log in to the extension with your participant code to use the YouTube Experiment extension.
 					</Typography>
