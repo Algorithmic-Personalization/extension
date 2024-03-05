@@ -295,7 +295,6 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 				console.error('Error creating new session:', err);
 			});
 		}
-		// TODO: watch for logout and disable API in that case
 	};
 
 	const start = async () => {
