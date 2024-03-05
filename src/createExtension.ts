@@ -244,7 +244,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 		Object.assign(state, updatedState);
 	};
 
-	const start = async () => {
+	const doStart = async () => {
 		setupVideoWatching(state.url ?? '');
 
 		getElement('yt-icon#logo-icon').then(elt => {
@@ -296,6 +296,15 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 			});
 		}
 		// TODO: watch for logout and disable API in that case
+	};
+
+	const start = async () => {
+		try {
+			await doStart();
+		} catch (err) {
+			removeLoaderMask();
+			console.error('Failed to start extension:', err);
+		}
 	};
 
 	return {

@@ -354,6 +354,7 @@ const homeApp: SubAppCreator = ({api}) => {
 			}
 
 			initialize(maybeNewChannelSource).catch(err => {
+				removeLoaderMask();
 				console.error('failed to initialize home app', err);
 			});
 
