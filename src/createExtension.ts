@@ -18,6 +18,19 @@ type ElementToWaitFor = {
 	timeout: NodeJS.Timeout;
 };
 
+/* D
+const createDebounce = (ms: number) => (fn: () => void) => {
+	let timeout: NodeJS.Timeout;
+
+	return () => {
+		clearTimeout(timeout);
+		timeout = setTimeout(fn, ms);
+	};
+};
+
+const debounce = createDebounce(500);
+*/
+
 const loadPersistedConfig = () => {
 	const item = getFromLocalStorage('config');
 
@@ -122,6 +135,21 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 		triggerUpdate({url});
 	};
 
+	const checkLoggedInYouTube = () => {
+		isLoggedInForSure().then(loggedIn => {
+			const isLoggedIn = loggedIn === 'yes';
+			saveToLocalStorage('loggedInYouTube', isLoggedIn ? 'true' : 'false');
+
+			if (state.loggedInYouTube !== isLoggedIn) {
+				triggerUpdate({loggedInYouTube: isLoggedIn});
+			}
+		}).catch(err => {
+			console.error('error checking if logged in to YouTube', err);
+		});
+	};
+
+	// D const checkLoggedInYouTubeDebounced = debounce(checkLoggedInYouTube);
+
 	const observer = new MutationObserver(_e => {
 		/* Useless I think
 		for (const change of e) {
@@ -132,6 +160,8 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 			}
 		}
 		*/
+
+		// D checkLoggedInYouTubeDebounced();
 
 		if (location.href !== previousUrl) {
 			api.sendPageView();
@@ -244,16 +274,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 			triggerUpdate(state);
 		}
 
-		isLoggedInForSure().then(loggedIn => {
-			const isLoggedIn = loggedIn === 'yes';
-			saveToLocalStorage('loggedInYouTube', isLoggedIn ? 'true' : 'false');
-
-			if (state.loggedInYouTube !== isLoggedIn) {
-				triggerUpdate({loggedInYouTube: isLoggedIn});
-			}
-		}).catch(err => {
-			log('error', 'checking if logged in', err);
-		});
+		checkLoggedInYouTube();
 
 		if (api.getAuth()) {
 			if (!state.config) {
