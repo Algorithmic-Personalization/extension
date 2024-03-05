@@ -211,7 +211,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 		}
 
 		if (newState.config) {
-			state.loggedInExtension = true;
+			updatedState.loggedInExtension = true;
 
 			if (!state.config) {
 				saveToLocalStorage('config', JSON.stringify(newState.config));
@@ -231,7 +231,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 		}
 
 		if (Object.prototype.hasOwnProperty.call(newState, 'config') && !newState.config) {
-			state.loggedInExtension = false;
+			updatedState.loggedInExtension = false;
 			saveToLocalStorage('config', '');
 		}
 
