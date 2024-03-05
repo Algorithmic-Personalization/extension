@@ -1,6 +1,6 @@
 {
 	"name": "Algorithmic Personalization Project",
-	"version": "2.6.0.2",
+	"version": "3.0.0.0",
 	"manifest_version": 3,
 	"content_scripts": [
 		{
@@ -10,7 +10,8 @@
 			],
 			"js": [
 				"content-script.js"
-			]
+			],
+			"run_at": "document_end"
 		},
 		{
 			"matches": [
