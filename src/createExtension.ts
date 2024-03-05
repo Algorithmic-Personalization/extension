@@ -239,9 +239,9 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 			app.onUpdate(updatedState, state).catch(err => {
 				console.error('Error updating sub-app', app.getName(), ':', err);
 			});
-
-			Object.assign(state, updatedState);
 		}
+
+		Object.assign(state, updatedState);
 	};
 
 	const start = async () => {

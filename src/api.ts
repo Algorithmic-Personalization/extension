@@ -220,7 +220,6 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 			if (res.kind === 'Success') {
 				sessionUuid = res.value.uuid;
 				saveToSessionStorage('sessionUuid', sessionUuid);
-				api.sendPageView();
 				return res.value.uuid;
 			}
 

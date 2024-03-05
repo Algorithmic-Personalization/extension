@@ -62,7 +62,6 @@ const installLoader = () => {
 	*/
 
 	document.body.appendChild(maskingDiv);
-	document.body.style.overflow = 'hidden';
 };
 
 const start = async () => {
