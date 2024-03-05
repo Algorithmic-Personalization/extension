@@ -80,21 +80,6 @@ const loadStoredEvents = () => {
 	}));
 };
 
-const saveStoredEventsFallback = (events: StoredEvent[], maxAttemptsCutOff: number) => {
-	console.log('Thinning events some to those attempted', maxAttemptsCutOff, 'times');
-	const newEvents = events.filter(e => e.attempts < maxAttemptsCutOff);
-	try {
-		saveToLocalStorage(eventsStorageKey, compressToUTF16(JSON.stringify(newEvents)));
-		console.log('Stored events locally after thinning to', maxAttemptsCutOff, 'attempts');
-	} catch (e) {
-		if (maxAttemptsCutOff > 0) {
-			saveStoredEventsFallback(newEvents, maxAttemptsCutOff - 1);
-		} else {
-			console.error('Failed to store events locally, giving up...', e);
-		}
-	}
-};
-
 const saveStoredEvents = (events: StoredEvent[]) => {
 	try {
 		saveToLocalStorage('lz-string', 'true');
@@ -103,13 +88,8 @@ const saveStoredEvents = (events: StoredEvent[]) => {
 		saveToLocalStorage(eventsStorageKey, data);
 		console.log('Cached events locally with success.');
 	} catch (e) {
-		console.error('Failed to store events locally, forgetting older ones...', e);
-		let maxMaxAttempts = 0;
-		for (const event of events) {
-			maxMaxAttempts = Math.max(maxMaxAttempts, event.attempts);
-		}
-
-		saveStoredEventsFallback(events, maxMaxAttempts);
+		console.error('Failed to store events locally, forgetting about them...', e);
+		saveToLocalStorage(eventsStorageKey, '');
 	}
 };
 
