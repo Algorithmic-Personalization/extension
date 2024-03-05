@@ -24,6 +24,7 @@ import {
 	saveToLocalStorage,
 	saveToSessionStorage,
 	cleanStorage,
+	log,
 } from './lib';
 
 export type Api = {
@@ -84,9 +85,7 @@ const saveStoredEvents = (events: StoredEvent[]) => {
 	try {
 		saveToLocalStorage('lz-string', 'true');
 		const data = compressToUTF16(JSON.stringify(events));
-		console.log('Attempting to store events locally with a total size of approx.', data.length / 512, 'KB');
 		saveToLocalStorage(eventsStorageKey, data);
-		console.log('Cached events locally with success.');
 	} catch (e) {
 		console.error('Failed to store events locally, forgetting about them...', e);
 		saveToLocalStorage(eventsStorageKey, '');
@@ -94,16 +93,12 @@ const saveStoredEvents = (events: StoredEvent[]) => {
 };
 
 const retryToPostStoredEvents = async () => {
-	console.log('Retrying to post stored events...');
 	const storedEvents = loadStoredEvents();
-
-	console.log('Found', storedEvents.length, 'event(s) to retry...');
 
 	for (const storedEvent of storedEvents) {
 		const latestAttempt = Number(new Date(storedEvent.lastAttempt));
 		const timeUntilNextAttempt = latestAttempt + retryDelay - Date.now();
 		if (timeUntilNextAttempt > 0 && !storedEvent.tryImmediately) {
-			console.log('Waiting', timeUntilNextAttempt, 'ms before retrying to post event', storedEvent.event.localUuid);
 			continue;
 		}
 
@@ -115,7 +110,6 @@ const retryToPostStoredEvents = async () => {
 		const {'X-Participant-Code': participantCode} = api.getHeaders();
 
 		if (!participantCode) {
-			console.log('Missing participant code!');
 			storedEvent.persisted = true;
 			continue;
 		}
@@ -130,9 +124,6 @@ const retryToPostStoredEvents = async () => {
 	}
 
 	const remainingEvents = storedEvents.filter(e => !e.persisted);
-	console.log(`Uploaded ${
-		storedEvents.length - remainingEvents.length
-	} events cached previously, ${remainingEvents.length} remain...`);
 
 	saveStoredEvents(remainingEvents);
 };
@@ -193,7 +184,7 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 			p.then(() => {
 				sessionPromise = undefined;
 			}).catch(e => {
-				console.log('Failed to create session:', e);
+				console.error('Failed to create session:', e);
 				sessionPromise = undefined;
 			});
 
@@ -259,7 +250,7 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 			const h = headers();
 
 			if (!h['X-Participant-Code']) {
-				console.log('Missing participant code!');
+				log('Missing participant code!');
 				return false;
 			}
 
@@ -324,7 +315,7 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 			event.url = window.location.href;
 
 			api.postEvent(event, true).catch(e => {
-				console.log('Failed to send page view event', event.localUuid, 'will be retried later on:', e);
+				log('Failed to send page view event', event.localUuid, 'will be retried later on:', e);
 			});
 		},
 
