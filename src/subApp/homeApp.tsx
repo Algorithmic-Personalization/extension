@@ -230,16 +230,19 @@ const homeApp: SubAppCreator = ({api}) => {
 
 		if (homeVideos.length < 3) {
 			console.error('not enough videos to replace');
+			removeLoaderMask();
 			return [];
 		}
 
 		if (replacementSource.length < 3) {
 			console.error('not enough recommendations to inject');
+			removeLoaderMask();
 			return [];
 		}
 
 		if (shown.length > 0) {
 			log('already replaced videos, returning...', {shown});
+			removeLoaderMask();
 			return [];
 		}
 
