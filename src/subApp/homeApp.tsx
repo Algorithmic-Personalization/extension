@@ -45,17 +45,36 @@ const getVideoTitle = (node: HTMLElement): string | undefined => {
 	return undefined;
 };
 
-const getHomeVideos = (): HomeVideo[] => {
+const removeLettersAfter = (subStrNeedle: string) => (str: string): string => {
+	const index = str.indexOf(subStrNeedle);
+
+	if (index === -1) {
+		return str;
+	}
+
+	return str.slice(0, index);
+};
+
+const isLinkToVideo = (link: HTMLAnchorElement): string | false => {
+	const m = /\?v=(.+)$/.exec(link.href);
+
+	if (m) {
+		return removeLettersAfter('&')(m[1]);
+	}
+
+	return false;
+};
+
+const doGetHomeVideos = (): HomeVideo[] => {
 	const links: HTMLAnchorElement[] = Array.from(document.querySelectorAll('a.ytd-thumbnail[href^="/watch?v="]'));
 	const maybeRes: Array<HomeVideo | undefined> = links.map(link => {
-		const videoExp = /\?v=(.+)$/;
-		const maybeMatch = videoExp.exec(link.href);
+		const maybeVideoId = isLinkToVideo(link);
 
-		if (!maybeMatch) {
+		if (maybeVideoId === false) {
 			return undefined;
 		}
 
-		const videoId = maybeMatch[1];
+		const videoId = maybeVideoId;
 
 		const title = getVideoTitle(link);
 
@@ -71,6 +90,36 @@ const getHomeVideos = (): HomeVideo[] => {
 	});
 
 	return maybeRes.filter(Boolean) as HomeVideo[];
+};
+
+const getHomeVideos = (log: (...args: any[]) => void) => async () => {
+	let attempts = 0;
+	const delays = [1000, 2000, 3000, 5000, 8000];
+	const maxAttempts = delays.length;
+
+	return new Promise<HomeVideo[]>((resolve, reject) => {
+		const getVideos = () => {
+			const videos = doGetHomeVideos();
+
+			if (videos.length >= 3) {
+				resolve(videos);
+				return;
+			}
+
+			++attempts;
+			log('error', 'failed to get home videos, attempt', attempts, 'of', maxAttempts);
+
+			if (attempts < maxAttempts) {
+				const delay = delays[attempts];
+				log('trying again in', delay, 'ms');
+				setTimeout(getVideos, delay);
+			} else {
+				reject(new Error('failed to get home videos'));
+			}
+		};
+
+		getVideos();
+	});
 };
 
 type ReactRoot = {
@@ -223,7 +272,7 @@ const homeApp: SubAppCreator = ({api}) => {
 		log('injection source data:', replacementSource);
 
 		if (homeVideos.length === 0) {
-			homeVideos = getHomeVideos().splice(0, 10);
+			homeVideos = (await getHomeVideos(log)()).splice(0, 10);
 		}
 
 		log('home videos:', homeVideos);

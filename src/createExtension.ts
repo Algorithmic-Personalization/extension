@@ -241,6 +241,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 
 		for (const app of subAppInstances) {
 			app.onUpdate(updatedState, state).catch(err => {
+				removeLoaderMask();
 				console.error('Error updating sub-app', app.getName(), ':', err);
 			});
 		}
