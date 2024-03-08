@@ -200,7 +200,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 		});
 	};
 
-	const triggerUpdate = (newState: Partial<SubAppState>) => {
+	const doTriggerUpdate = (newState: Partial<SubAppState>) => {
 		log('new state received:', newState);
 
 		const updatedState = {...state, ...newState};
@@ -246,6 +246,15 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 		}
 
 		Object.assign(state, updatedState);
+	};
+
+	const triggerUpdate = (newState: Partial<SubAppState>) => {
+		try {
+			doTriggerUpdate(newState);
+		} catch (err) {
+			console.error('Error triggering apps update:', err);
+			removeLoaderMask();
+		}
 	};
 
 	const doStart = async () => {
