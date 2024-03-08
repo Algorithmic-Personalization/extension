@@ -130,9 +130,22 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 
 	let previousUrl: string | undefined;
 
+	const fetchConfig = async () => {
+		api.getConfig().then(config => {
+			if (config.kind === 'Success') {
+				triggerUpdate({config: config.value});
+			} else {
+				console.error('could not get config:', config.message);
+			}
+		}).catch(err => {
+			console.error('error getting config:', err);
+		});
+	};
+
 	const onUrlChange = (url: string) => {
 		log('URL changed to', url);
 		triggerUpdate({url});
+		void fetchConfig();
 	};
 
 	const checkLoggedInYouTube = () => {
@@ -292,15 +305,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 
 		if (api.getAuth()) {
 			if (!state.config) {
-				api.getConfig().then(cfg => {
-					if (cfg.kind === 'Success') {
-						triggerUpdate({config: cfg.value});
-					} else {
-						console.error('could not get config:', cfg.message);
-					}
-				}, err => {
-					throw err as Error;
-				});
+				void fetchConfig();
 			}
 
 			api.newSession().then(uuid => {
