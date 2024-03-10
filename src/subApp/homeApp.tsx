@@ -207,16 +207,17 @@ const getRecommendationsToInject = (api: Api, log: (...args: any[]) => void) => 
 		return filtered.filter(({ok}) => ok).map(({rec}) => rec);
 	};
 
-	let recommendations = await getRecommendations();
+	let recommendations: Recommendation[] = [];
 
 	const maxAttempts = 3;
 	let attempts = 0;
 
 	while (recommendations.length < 3 && attempts < maxAttempts) {
+		log('attempt', attempts + 1, 'of', maxAttempts, 'to get recommendations to inject');
 		++attempts;
 
 		// eslint-disable-next-line no-await-in-loop
-		recommendations = await getRecommendations(true);
+		recommendations = await getRecommendations(attempts > 1);
 	}
 
 	return recommendations;
