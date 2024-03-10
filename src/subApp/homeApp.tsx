@@ -209,7 +209,8 @@ const getRecommendationsToInject = (api: Api, log: (...args: any[]) => void) => 
 
 	let recommendations: Recommendation[] = [];
 
-	const maxAttempts = 3;
+	const waitDelays = [1000, 2000, 3000, 5000, 8000];
+	const maxAttempts = waitDelays.length;
 	let attempts = 0;
 
 	while (recommendations.length < 3 && attempts < maxAttempts) {
@@ -217,7 +218,16 @@ const getRecommendationsToInject = (api: Api, log: (...args: any[]) => void) => 
 		++attempts;
 
 		// eslint-disable-next-line no-await-in-loop
-		recommendations = await getRecommendations(attempts > 1);
+		recommendations = await getRecommendations(attempts >= 3);
+
+		if (recommendations.length < 3) {
+			const delay = waitDelays[attempts - 1];
+			log('trying again in', delay, 'ms');
+			// eslint-disable-next-line no-await-in-loop
+			await new Promise(resolve => {
+				setTimeout(resolve, delay);
+			});
+		}
 	}
 
 	return recommendations;
