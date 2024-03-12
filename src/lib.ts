@@ -280,6 +280,8 @@ export const imageExists = async (url: string): Promise<boolean> => {
 
 	return new Promise((resolve, reject) => {
 		try {
+			setTimeout(reject, 5000);
+
 			const img = new Image();
 			img.onload = () => {
 				document.body.removeChild(img);
