@@ -44,6 +44,12 @@ export const HomeVideoCard: React.FC<Recommendation & {
 		(async () => {
 			const picExists = await imageExists(candidateMiniatureUrls[0]);
 
+			if (picExists) {
+				onPictureLoaded?.();
+			} else {
+				onPictureErrored?.();
+			}
+
 			if (!picExists) {
 				setPictureUrl(candidateMiniatureUrls[1]);
 			}
