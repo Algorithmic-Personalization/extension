@@ -335,7 +335,9 @@ const homeApp: SubAppCreator = ({api}) => {
 		// Keep track the rest of the videos shown
 		shown.push(...homeVideos.slice(3));
 
+		log('waiting for all pictures to load...');
 		await Promise.allSettled(picturePromises);
+		log('all pictures loaded');
 
 		removeLoaderMask();
 
