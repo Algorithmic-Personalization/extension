@@ -11,6 +11,7 @@ import RecommendationsEvent from './../common/models/recommendationsEvent';
 const videoApp: SubAppCreator = ({api, log}) => {
 	let currentUrl = '';
 	let loggedInYt = false;
+	let loggedInExtension = false;
 
 	const collect = async () => {
 		const {href} = window.location;
@@ -38,11 +39,20 @@ const videoApp: SubAppCreator = ({api, log}) => {
 		});
 	};
 
+	const doCollect = (url: string) => {
+		collect().then(() => {
+			log('Data collection on', url, 'complete');
+		}).catch(err => {
+			log('Error collecting data on', url, err);
+		});
+	};
+
 	const app: SubAppInstance = {
 		getName: () => 'videoApp',
 
 		async onUpdate(state) {
 			loggedInYt = state.loggedInYouTube ?? false;
+			loggedInExtension = state.loggedInExtension ?? false;
 
 			if (!isVideoPage(state.url)) {
 				return [];
@@ -50,6 +60,11 @@ const videoApp: SubAppCreator = ({api, log}) => {
 
 			if (!loggedInYt) {
 				log('Not logged in to YouTube, skipping data collection');
+				return [];
+			}
+
+			if (!loggedInExtension) {
+				log('Not logged in to the extension, skipping data collection');
 				return [];
 			}
 
@@ -61,12 +76,8 @@ const videoApp: SubAppCreator = ({api, log}) => {
 					return [];
 				}
 
-				log('URL changed to video page', state.url, 'starting data collection');
-				collect().then(() => {
-					log('Data collection on', state.url, 'complete');
-				}).catch(err => {
-					log('Error collecting data on', state.url, err);
-				});
+				log('URL changed to video page', currentUrl, 'starting data collection');
+				doCollect(currentUrl);
 			}
 
 			return [];
