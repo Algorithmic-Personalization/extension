@@ -12,6 +12,7 @@ import {
 	isHomePage,
 	findParentById,
 	removeLoaderMask,
+	sleep,
 } from '../lib';
 
 import fetchRecommendationsToInject from '../fetchYtChannelRecommendations';
@@ -322,20 +323,22 @@ const homeApp: SubAppCreator = ({api, log}) => {
 					log('video', video, 'replaced with', replacement, 'successfully');
 					roots.push(root);
 					shown.push(replacement);
+					picturePromises.push(picturePromise);
 				} else {
 					log('failed to replace video', video, 'with', replacement);
 					shown.push(video);
 				}
 			});
-
-			picturePromises.push(picturePromise);
 		}
 
 		// Keep track the rest of the videos shown
 		shown.push(...homeVideos.slice(3));
 
 		log('waiting for all pictures to load...');
-		await Promise.allSettled(picturePromises);
+		await Promise.race([
+			Promise.allSettled(picturePromises),
+			sleep(5000),
+		]);
 		log('all pictures loaded');
 
 		removeLoaderMask();

@@ -477,3 +477,7 @@ export const findParentById = (elId: string) => (elt: Element): Element | undefi
 
 	return undefined;
 };
+
+export const sleep = async (ms: number) => new Promise(resolve => {
+	setTimeout(resolve, ms);
+});
