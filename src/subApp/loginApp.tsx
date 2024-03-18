@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import {
@@ -47,18 +47,35 @@ const LoginApp: React.FC<SubAppState & {
 		}, 1000 * 60 * 5);
 	};
 
+	useEffect(() => {
+		const kbListener = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') {
+				hide();
+			}
+		};
+
+		document.addEventListener('keydown', kbListener);
+
+		return () => {
+			document.removeEventListener('keydown', kbListener);
+		};
+	}, []);
+
 	return (
-		<Box sx={{
-			position: 'absolute',
-			zIndex: 10000,
-			top: 0,
-			bottom: 0,
-			left: 0,
-			right: 0,
-			display: 'flex',
-			alignItems: 'center',
-			justifyContent: 'center',
-		}}>
+		<Box
+			sx={{
+				position: 'absolute',
+				zIndex: 10000,
+				top: 0,
+				bottom: 0,
+				left: 0,
+				right: 0,
+				display: 'flex',
+				alignItems: 'center',
+				justifyContent: 'center',
+			}}
+			onClick={hide}
+		>
 			<Box sx={{
 				backgroundColor: getThemeContrastBackgroundColor(),
 				color: getThemeContrastTextColor(),
