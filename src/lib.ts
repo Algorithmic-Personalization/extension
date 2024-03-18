@@ -25,17 +25,6 @@ export const log = (...args: any[]) => {
 	console.log(...args);
 };
 
-export type VersionDescriptor = {
-	version: string;
-	update_link: string;
-};
-
-export type UpdateManifest = {
-	addons: Record<string, {
-		updates: VersionDescriptor[];
-	}>;
-};
-
 export const extractYtInitialData = (rawPageHtml: string) => {
 	const parser = new DOMParser();
 	const doc = parser.parseFromString(rawPageHtml, 'text/html');
