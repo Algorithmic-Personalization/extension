@@ -5,6 +5,8 @@ module.exports = {
 	},
 	extends: [
 		'plugin:react/recommended',
+		'plugin:import/recommended',
+		'plugin:import/typescript',
 		'xo',
 	],
 	overrides: [
@@ -27,6 +29,8 @@ module.exports = {
 	],
 	rules: {
 		'new-cap': 0,
+		'import/no-unused-modules': 'warn',
+		'import/no-named-as-default': 0,
 	},
 	settings: {
 		react: {
