@@ -235,6 +235,7 @@ const getRecommendationsToInject = (api: Api, log: (...args: any[]) => void) => 
 
 const homeApp: SubAppCreator = ({api, log}) => {
 	let channelSource: string | undefined;
+	let channelPos: number | undefined;
 	let replacementSource: Recommendation[] = [];
 	let homeVideos: HomeVideo[] = [];
 	const roots: ReactRoot[] = [];
@@ -262,6 +263,11 @@ const homeApp: SubAppCreator = ({api, log}) => {
 			replacementSource,
 			shown,
 		);
+
+		event.extra = {
+			channelSource,
+			channelPos,
+		};
 
 		return api.postEvent(event, true).then(() => {
 			log('home shown event sent successfully');
@@ -410,6 +416,7 @@ const homeApp: SubAppCreator = ({api, log}) => {
 			log('Setting up home app', state);
 
 			const {channelSource: maybeNewChannelSource} = state.config;
+			channelPos = state.config.pos;
 
 			if (!maybeNewChannelSource) {
 				log('no channel source in state, returning...');
