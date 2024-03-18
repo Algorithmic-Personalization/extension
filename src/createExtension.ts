@@ -163,18 +163,23 @@ export const createExtension = (api: Api, log: (...args: any[]) => void) => (sub
 
 	// D const checkLoggedInYouTubeDebounced = debounce(checkLoggedInYouTube);
 
-	const observer = new MutationObserver(_e => {
-		/* Useless I think
-		for (const change of e) {
-			for (const v of Array.from(change.addedNodes)) {
-				if (v.nodeName === 'VIDEO') {
-					watchVideoEvents(v as HTMLVideoElement);
+	type DeletionWatcher = {
+		elt: Element;
+		onDeleted: () => void;
+	};
+
+	const watchListForDeletion: DeletionWatcher[] = [];
+
+	const observer = new MutationObserver(e => {
+		for (const rec of e) {
+			for (const r of Array.from(rec.removedNodes)) {
+				for (const {elt: element, onDeleted: callback} of watchListForDeletion) {
+					if (r.contains(element)) {
+						callback();
+					}
 				}
 			}
 		}
-		*/
-
-		// D checkLoggedInYouTubeDebounced();
 
 		if (location.href !== previousUrl) {
 			api.sendPageView();
@@ -269,19 +274,30 @@ export const createExtension = (api: Api, log: (...args: any[]) => void) => (sub
 		}
 	};
 
-	const doStart = async () => {
-		setupVideoWatching(state.url ?? '');
-
-		getElement('yt-icon#logo-icon').then(elt => {
+	const replaceLogo = () => {
+		getElement('yt-icon#logo-icon,a#logo').then(elt => {
 			log('YouTube logo found', elt);
 			elt.addEventListener('click', e => {
 				log('home link clicked');
 				e.preventDefault();
 				window.location.href = 'https://www.youtube.com/';
 			});
+
+			watchListForDeletion.push({
+				elt,
+				onDeleted() {
+					log('YouTube logo removed, replacing it again');
+					replaceLogo();
+				},
+			});
 		}, err => {
 			console.error('Error getting home link:', err);
 		});
+	};
+
+	const doStart = async () => {
+		setupVideoWatching(state.url ?? '');
+		replaceLogo();
 
 		log('Starting extension with', subApps.length, 'sub-apps');
 		log('Observing document for changes');
