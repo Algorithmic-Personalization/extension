@@ -74,7 +74,6 @@ const LoginApp: React.FC<SubAppState & {
 				alignItems: 'center',
 				justifyContent: 'center',
 			}}
-			onClick={hide}
 		>
 			<Box sx={{
 				backgroundColor: getThemeContrastBackgroundColor(),
