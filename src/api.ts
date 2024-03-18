@@ -313,6 +313,10 @@ export const createApi = (apiUrl: string, overrideParticipantCode?: string): Api
 			event.type = EventType.PAGE_VIEW;
 			event.url = window.location.href;
 
+			if (!event.context) {
+				event.context = document.referrer;
+			}
+
 			api.postEvent(event, true).catch(e => {
 				log('Failed to send page view event', event.localUuid, 'will be retried later on:', e);
 			});

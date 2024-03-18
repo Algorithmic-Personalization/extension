@@ -127,6 +127,7 @@ const LoginApp: React.FC<SubAppState & {
 
 						api.newSession().then(s => {
 							log('New session created:', s);
+							api.sendPageView();
 						}, e => {
 							console.error('Error creating new session:', e);
 						});
