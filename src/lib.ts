@@ -272,38 +272,55 @@ export const extractRecommendations = (
 
 export const isChrome = () => navigator.userAgent.includes('Chrome');
 
-export const imageExists = async (url: string): Promise<boolean> => {
+const createImageExists = (): ((url: string) => Promise<boolean>) => {
 	if (isChrome()) {
-		const r = await fetch(url, {method: 'HEAD'});
-		return r.ok;
+		return async url => {
+			const r = await fetch(url, {method: 'HEAD'});
+			return r.ok;
+		};
 	}
 
-	return new Promise((resolve, reject) => {
-		try {
-			setTimeout(reject, 5000);
+	const timeout = 5000;
+	let assumeLoaded = false;
 
-			const img = new Image();
-			img.onload = () => {
-				document.body.removeChild(img);
-				resolve(true);
-			};
-
-			img.onerror = () => {
-				document.body.removeChild(img);
-				resolve(false);
-			};
-
-			img.style.width = '1px';
-			img.style.height = '1px';
-
-			img.src = url;
-
-			document.body.appendChild(img);
-		} catch (error) {
-			reject(error);
+	return async url => {
+		if (assumeLoaded) {
+			return true;
 		}
-	});
+
+		return new Promise((resolve, reject) => {
+			try {
+				setTimeout(() => {
+					assumeLoaded = true;
+					document.body.removeChild(img);
+					reject(new Error('Timeout'));
+				}, timeout);
+
+				const img = new Image();
+				img.onload = () => {
+					document.body.removeChild(img);
+					resolve(true);
+				};
+
+				img.onerror = () => {
+					document.body.removeChild(img);
+					resolve(false);
+				};
+
+				img.style.width = '1px';
+				img.style.height = '1px';
+
+				img.src = url;
+
+				document.body.appendChild(img);
+			} catch (error) {
+				reject(error);
+			}
+		});
+	};
 };
+
+export const imageExists = createImageExists();
 
 export const isLoggedIn = () => Boolean(document.querySelector('#avatar-btn'));
 
