@@ -5,7 +5,7 @@ import {type ParticipantConfig} from './common/models/experimentConfig';
 import WatchTimeEvent from './common/models/watchTimeEvent';
 import {
 	log,
-	isLoggedInForSure,
+	isLoggedInForSureYt,
 	saveToLocalStorage,
 	getFromLocalStorage,
 	removeLoaderMask,
@@ -149,7 +149,7 @@ export const createExtension = (api: Api, log: (...args: any[]) => void) => (sub
 	};
 
 	const checkLoggedInYouTube = () => {
-		isLoggedInForSure().then(loggedIn => {
+		isLoggedInForSureYt().then(loggedIn => {
 			const isLoggedIn = loggedIn === 'yes';
 			saveToLocalStorage('loggedInYouTube', isLoggedIn ? 'true' : 'false');
 

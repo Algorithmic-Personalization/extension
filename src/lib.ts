@@ -330,7 +330,7 @@ export const isNotLoggedIn = () => Boolean(
 
 export type Res = 'yes' | 'no' | 'maybe';
 
-export const isLoggedInForSure = async (): Promise<Res> => {
+export const isLoggedInForSureYt = async (): Promise<Res> => {
 	const check = (): Res => {
 		if (isLoggedIn()) {
 			return 'yes';

@@ -3,7 +3,7 @@ import {createRoot} from 'react-dom/client';
 
 import {ThemeProvider} from '@mui/material';
 
-import {isOnVideoPage, isVideoPage, isOnHomePage, log, imageExists, isLoggedInForSure, loaderId} from './lib';
+import {isOnVideoPage, isVideoPage, isOnHomePage, log, imageExists, isLoggedInForSureYt, loaderId} from './lib';
 import fetchRecommendationsToInject from './fetchYtChannelRecommendations';
 import App from './App';
 import theme from './theme';
@@ -292,7 +292,7 @@ const onVisitHomePageFirstTime = async () => {
 		return;
 	}
 
-	const loggedIn = await isLoggedInForSure();
+	const loggedIn = await isLoggedInForSureYt();
 
 	console.log('logged in:', loggedIn);
 
