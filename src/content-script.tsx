@@ -7,6 +7,7 @@ import logoutApp from './subApp/logoutApp';
 import videoApp from './subApp/videoApp';
 
 import {defaultApi as api} from './apiProvider';
+import {log} from './lib';
 
 const subApps: SubAppCreator[] = [
 	loginApp,
@@ -15,5 +16,5 @@ const subApps: SubAppCreator[] = [
 	videoApp,
 ];
 
-const extension = createExtension(api)(subApps);
+const extension = createExtension(api, log)(subApps);
 extension.start().catch(console.error);

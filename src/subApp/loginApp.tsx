@@ -14,15 +14,17 @@ import {getThemeContrastBackgroundColor, getThemeContrastTextColor} from '../the
 import {type SubAppCreator, type SubAppState, ReactAdapter} from '../SubApp';
 
 import MessageC from '../components/MessageC';
-import {getFromLocalStorage, log} from '../lib';
+import {getFromLocalStorage} from '../lib';
 import {useApi} from '../apiProvider';
 
 const LoginApp: React.FC<SubAppState & {
 	triggerUpdate: (newState: Partial<SubAppState>) => void;
+	log: (...args: any[]) => void;
 }> = ({
 	loggedInExtension,
 	loggedInYouTube,
 	triggerUpdate,
+	log,
 }) => {
 	const [shown, setShown] = useState(true);
 	const [error, setError] = useState<string | undefined>();
@@ -181,7 +183,7 @@ const LoginApp: React.FC<SubAppState & {
 	);
 };
 
-export const loginApp: SubAppCreator = ({api, getElement, triggerUpdate}) => {
+export const loginApp: SubAppCreator = ({api, getElement, triggerUpdate, log}) => {
 	const rootElt = document.createElement('div');
 	rootElt.id = 'ytdpnl-extension-login-app';
 
@@ -190,7 +192,7 @@ export const loginApp: SubAppCreator = ({api, getElement, triggerUpdate}) => {
 	const render = (state: SubAppState) => {
 		const App = (
 			<ReactAdapter api={api}>
-				<LoginApp {...{...state, triggerUpdate}} />
+				<LoginApp {...{...state, triggerUpdate, log}} />
 			</ReactAdapter>
 		);
 

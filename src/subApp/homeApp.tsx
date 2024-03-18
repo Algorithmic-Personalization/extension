@@ -10,7 +10,6 @@ import {
 import {
 	imageExists,
 	isHomePage,
-	log,
 	findParentById,
 	removeLoaderMask,
 } from '../lib';
@@ -233,7 +232,7 @@ const getRecommendationsToInject = (api: Api, log: (...args: any[]) => void) => 
 	return recommendations;
 };
 
-const homeApp: SubAppCreator = ({api}) => {
+const homeApp: SubAppCreator = ({api, log}) => {
 	let channelSource: string | undefined;
 	let replacementSource: Recommendation[] = [];
 	let homeVideos: HomeVideo[] = [];

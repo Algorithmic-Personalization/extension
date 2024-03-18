@@ -46,7 +46,7 @@ const loadPersistedConfig = () => {
 	return undefined;
 };
 
-export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
+export const createExtension = (api: Api, log: (...args: any[]) => void) => (subApps: SubAppCreator[]) => {
 	let elementsToWaitFor: ElementToWaitFor[] = [];
 	const subAppInstances: SubAppInstance[] = [];
 
@@ -292,6 +292,7 @@ export const createExtension = (api: Api) => (subApps: SubAppCreator[]) => {
 				api,
 				getElement,
 				triggerUpdate,
+				log,
 			});
 
 			subAppInstances.push(instance);

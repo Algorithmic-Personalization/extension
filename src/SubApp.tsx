@@ -10,6 +10,7 @@ export type SubAppConfig = {
 	api: Api;
 	getElement: (selector: string) => Promise<Element>;
 	triggerUpdate: (newState: Partial<SubAppState>) => void;
+	log: (...args: any[]) => void;
 };
 
 export type SubAppState = {
