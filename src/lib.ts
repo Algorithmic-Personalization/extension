@@ -446,7 +446,10 @@ export const removeLoaderMask = () => {
 	const mask = document.getElementById(loaderId);
 
 	if (mask) {
-		mask.remove();
+		// Add a tiny timeout to reduce flickering
+		setTimeout(() => {
+			mask.remove();
+		}, 200);
 		return true;
 	}
 
