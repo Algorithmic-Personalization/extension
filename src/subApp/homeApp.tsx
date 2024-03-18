@@ -336,8 +336,12 @@ const homeApp: SubAppCreator = ({api, log}) => {
 
 		log('waiting for all pictures to load...');
 		await Promise.race([
-			Promise.allSettled(picturePromises),
-			sleep(5000),
+			Promise.allSettled(picturePromises).then(() => {
+				log('all pictures loaded as expected');
+			}),
+			sleep(5000).then(() => {
+				log('timed out waiting for all pictures to load');
+			}),
 		]);
 		log('all pictures loaded');
 
