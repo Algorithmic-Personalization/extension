@@ -13,6 +13,7 @@ import {
 	findParentById,
 	removeLoaderMask,
 	sleep,
+	getRecommendationsOnPage,
 } from '../lib';
 
 import fetchRecommendationsToInject from '../fetchYtChannelRecommendations';
@@ -29,97 +30,6 @@ type HomeVideo = {
 	videoId: string;
 	title: string;
 	url: string;
-};
-
-const getVideoTitle = (node: HTMLElement): string | undefined => {
-	const maybeTitle = node.querySelector('#video-title');
-
-	if (maybeTitle) {
-		return maybeTitle.textContent?.trim();
-	}
-
-	if (node.parentElement && node.id !== 'content') {
-		return getVideoTitle(node.parentElement);
-	}
-
-	return undefined;
-};
-
-const removeLettersAfter = (subStrNeedle: string) => (str: string): string => {
-	const index = str.indexOf(subStrNeedle);
-
-	if (index === -1) {
-		return str;
-	}
-
-	return str.slice(0, index);
-};
-
-const isLinkToVideo = (link: HTMLAnchorElement): string | false => {
-	const m = /\?v=(.+)$/.exec(link.href);
-
-	if (m) {
-		return removeLettersAfter('&')(m[1]);
-	}
-
-	return false;
-};
-
-const doGetHomeVideos = (): HomeVideo[] => {
-	const links: HTMLAnchorElement[] = Array.from(document.querySelectorAll('a.ytd-thumbnail[href^="/watch?v="]'));
-	const maybeRes: Array<HomeVideo | undefined> = links.map(link => {
-		const maybeVideoId = isLinkToVideo(link);
-
-		if (maybeVideoId === false) {
-			return undefined;
-		}
-
-		const videoId = maybeVideoId;
-
-		const title = getVideoTitle(link);
-
-		if (!title) {
-			return undefined;
-		}
-
-		return {
-			videoId,
-			title,
-			url: link.href,
-		};
-	});
-
-	return maybeRes.filter(Boolean) as HomeVideo[];
-};
-
-const getHomeVideos = (log: (...args: any[]) => void) => async () => {
-	let attempts = 0;
-	const delays = [1000, 2000, 3000, 5000, 8000];
-	const maxAttempts = delays.length;
-
-	return new Promise<HomeVideo[]>((resolve, reject) => {
-		const getVideos = () => {
-			const videos = doGetHomeVideos();
-
-			if (videos.length >= 3) {
-				resolve(videos);
-				return;
-			}
-
-			++attempts;
-			log('error', 'failed to get home videos, attempt', attempts, 'of', maxAttempts);
-
-			if (attempts < maxAttempts) {
-				const delay = delays[attempts];
-				log('trying again in', delay, 'ms');
-				setTimeout(getVideos, delay);
-			} else {
-				reject(new Error('failed to get home videos'));
-			}
-		};
-
-		getVideos();
-	});
 };
 
 type ReactRoot = {
@@ -289,7 +199,7 @@ const homeApp: SubAppCreator = ({api, log}) => {
 		log('injection source data:', replacementSource);
 
 		if (homeVideos.length === 0) {
-			homeVideos = (await getHomeVideos(log)()).splice(0, 10);
+			homeVideos = (await getRecommendationsOnPage(log)('a.ytd-thumbnail[href^="/watch?v="]')).splice(0, 10);
 		}
 
 		log('home videos:', homeVideos);

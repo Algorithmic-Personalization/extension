@@ -3,7 +3,7 @@ import {
 	type SubAppInstance,
 } from '../SubApp';
 
-import {isVideoPage} from '../lib';
+import {isVideoPage, getRecommendationsOnPage} from '../lib';
 import {fetchRecommendations} from '../recommendationsFetcher';
 
 import RecommendationsEvent from './../common/models/recommendationsEvent';
@@ -18,10 +18,15 @@ const videoApp: SubAppCreator = ({api, log}) => {
 
 		log('Collecting data on video page', href);
 
-		const nonPersonalizedRecommendations = await fetchRecommendations(href, false);
-		const personalizedRecommendations = await fetchRecommendations(href, true);
+		const [
+			nonPersonalizedRecommendations,
+			personalizedRecommendations,
+		] = await Promise.all([
+			fetchRecommendations(href, false),
+			getRecommendationsOnPage(log)('#related a[href^="/watch?v="].ytd-thumbnail', 10),
+		]);
 
-		log('recommendations sample extracted', {
+		log('recommendations extracted', {
 			href,
 			defaultRecommendations: nonPersonalizedRecommendations,
 			personalizedRecommendations,
@@ -30,7 +35,6 @@ const videoApp: SubAppCreator = ({api, log}) => {
 		const event = new RecommendationsEvent(
 			nonPersonalizedRecommendations,
 			personalizedRecommendations,
-			[],
 		);
 
 		log('sending recommendations event to server', event);

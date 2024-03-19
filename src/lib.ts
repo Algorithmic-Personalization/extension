@@ -1,4 +1,5 @@
 import type Recommendation from './common/types/Recommendation';
+import {type RecommendationBase} from './common/types/Recommendation';
 import {get} from './common/util';
 
 export const isOnVideoPage = () => window.location.pathname === '/watch';
@@ -473,3 +474,95 @@ export const findParentById = (elId: string) => (elt: Element): Element | undefi
 export const sleep = async (ms: number) => new Promise(resolve => {
 	setTimeout(resolve, ms);
 });
+
+const getVideoTitle = (node: HTMLElement): string | undefined => {
+	const maybeTitle = node.querySelector('#video-title');
+
+	if (maybeTitle) {
+		return maybeTitle.textContent?.trim();
+	}
+
+	if (node.parentElement && node.id !== 'content') {
+		return getVideoTitle(node.parentElement);
+	}
+
+	return undefined;
+};
+
+const removeLettersAfter = (subStrNeedle: string) => (str: string): string => {
+	const index = str.indexOf(subStrNeedle);
+
+	if (index === -1) {
+		return str;
+	}
+
+	return str.slice(0, index);
+};
+
+const isLinkToVideo = (link: HTMLAnchorElement): string | false => {
+	const m = /\?v=(.+)$/.exec(link.href);
+
+	if (m) {
+		return removeLettersAfter('&')(m[1]);
+	}
+
+	return false;
+};
+
+// Link selector for home:
+const doGetRecommendationBases = (linkSelector: string): RecommendationBase[] => {
+	const links: HTMLAnchorElement[] = Array.from(document.querySelectorAll(linkSelector));
+	const maybeRes: Array<RecommendationBase | undefined> = links.map(link => {
+		const maybeVideoId = isLinkToVideo(link);
+
+		if (maybeVideoId === false) {
+			return undefined;
+		}
+
+		const videoId = maybeVideoId;
+
+		const title = getVideoTitle(link);
+
+		if (!title) {
+			return undefined;
+		}
+
+		return {
+			videoId,
+			title,
+			url: link.href,
+		};
+	});
+
+	return maybeRes.filter(Boolean) as RecommendationBase[];
+};
+
+export const getRecommendationsOnPage = (log: (...args: any[]) => void) => async (linkSelector: string, minimum = 3) => {
+	let attempts = 0;
+	const delays = [1000, 2000, 3000, 5000, 8000, 13000];
+	const maxAttempts = delays.length;
+
+	return new Promise<RecommendationBase[]>((resolve, reject) => {
+		const getVideos = () => {
+			const videos = doGetRecommendationBases(linkSelector);
+
+			if (videos.length >= minimum) {
+				resolve(videos);
+				return;
+			}
+
+			++attempts;
+			log('error', 'failed to scrape videos from page, attempt', attempts, 'of', maxAttempts);
+
+			if (attempts < maxAttempts) {
+				const delay = delays[attempts];
+				log('trying again in', delay, 'ms');
+				setTimeout(getVideos, delay);
+			} else {
+				reject(new Error('failed to get home videos'));
+			}
+		};
+
+		getVideos();
+	});
+};
