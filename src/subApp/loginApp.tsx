@@ -73,6 +73,7 @@ const LoginApp: React.FC<SubAppState & {
 				display: 'flex',
 				alignItems: 'center',
 				justifyContent: 'center',
+				backgroundColor: 'rgba(0, 0, 0, 0.5)',
 			}}
 		>
 			<Box sx={{
