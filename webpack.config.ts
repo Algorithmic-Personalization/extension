@@ -1,4 +1,5 @@
 import path from 'path';
+// eslint-disable-next-line import/default
 import CopyPlugin from 'copy-webpack-plugin';
 import FileManagerPlugin from 'filemanager-webpack-plugin';
 import {EnvironmentPlugin} from 'webpack';
